@@ -81,7 +81,8 @@ Acota también `page` (tope explícito): `OFFSET = (page - 1) * pageSize` con `p
 page: z.coerce.number().int().min(1).max(1_000_000).default(1),
 id: z.string().regex(/^[1-9]\d{0,9}$/).transform(Number),
 ```
-**Origen:** línea base, 2026-11-05 (`points_ledger UNIQUE(user_id, action, ref_id)`); refinada en products-api, 2026-11-05 (`products.schemas.ts`).
+Checkout/acciones que mueven stock o puntos: exige un header `Idempotency-Key` validado por regex (`^[A-Za-z0-9_-]{8,64}$`), busca el pedido previo por `(user_id, key)` DENTRO de la misma transacción `BEGIN IMMEDIATE` y valida todas las líneas antes de escribir; evita comprobar la clave fuera de la transacción o descontar stock línea a línea sin validar antes, porque un doble envío o una carrera dejaría stock negativo o puntos duplicados.
+**Origen:** línea base, 2026-11-05 (`points_ledger UNIQUE(user_id, action, ref_id)`); refinada en products-api, 2026-11-05 (`products.schemas.ts`) y orders-api, 2026-11-05 (`orders.service.ts`).
 
 ### SRB-008 · A09:2025 Security Logging and Alerting Failures · Logs
 **Regla:** registra eventos con campos estructurados, id de correlación y redacción de `password`, `token`, `authorization`, cookies y PII; evita registrar bodies o headers completos y concatenar entradas del usuario en el mensaje, porque filtran datos y permiten falsificar entradas.
