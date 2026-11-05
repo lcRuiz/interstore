@@ -5,7 +5,7 @@
   "description": "API REST del catálogo con sistema de recompensas (Express + SQLite)",
   "type": "module",
   "engines": {
-    "node": ">=22.13"
+    "node": ">=22.16"
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",

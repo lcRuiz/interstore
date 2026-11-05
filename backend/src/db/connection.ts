@@ -1,26 +1,44 @@
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
-import { schema } from './schema.js';
+import { migrate } from './migrate.js';
 
 export type Db = DatabaseSync;
 
 const IN_MEMORY = ':memory:';
 
+/** Espera máxima por el lock de escritura antes de fallar con SQLITE_BUSY (solo archivo). */
+const BUSY_TIMEOUT_MS = 5000;
+
 /**
- * Abre (o crea) la base SQLite y aplica el esquema.
+ * Abre (o crea) la base SQLite y aplica las migraciones pendientes.
  *
  * Se usa `node:sqlite` (incluido en Node >= 22.13) en lugar de better-sqlite3
  * para evitar compilar binarios nativos, algo frágil en Windows. Su API es
- * síncrona, lo que simplifica las transacciones.
+ * síncrona, lo que simplifica las transacciones. La opción `timeout` exige
+ * Node >= 22.16.
+ *
+ * - `foreign_keys = ON` en cada conexión (SQLite lo desactiva por defecto).
+ * - En archivo: WAL (lecturas concurrentes con un escritor) y `busy_timeout`.
  */
 export function openDatabase(path: string): Db {
-  if (path !== IN_MEMORY) mkdirSync(dirname(path), { recursive: true });
+  const inMemory = path === IN_MEMORY;
+  if (!inMemory) mkdirSync(dirname(path), { recursive: true });
 
-  const db = new DatabaseSync(path);
-  db.exec('PRAGMA foreign_keys = ON;');
-  if (path !== IN_MEMORY) db.exec('PRAGMA journal_mode = WAL;');
-  db.exec(schema);
+  // `enableForeignKeyConstraints` y `PRAGMA foreign_keys = ON` son redundantes a propósito: el
+  // PRAGMA deja explícito el requisito sin depender del valor por defecto del driver.
+  const db = new DatabaseSync(path, {
+    enableForeignKeyConstraints: true,
+    ...(inMemory ? {} : { timeout: BUSY_TIMEOUT_MS }),
+  });
+  try {
+    db.exec('PRAGMA foreign_keys = ON;');
+    if (!inMemory) db.exec('PRAGMA journal_mode = WAL;');
+    migrate(db);
+  } catch (error) {
+    db.close();
+    throw error;
+  }
   return db;
 }
 

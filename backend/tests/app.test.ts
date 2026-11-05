@@ -93,11 +93,11 @@ describe('withValidation', () => {
 });
 
 describe('seed', () => {
-  it('carga 40 productos en 5 categorías y es idempotente', async () => {
+  it('carga 40 productos en 3 categorías y es idempotente', async () => {
     const { db } = createTestApp();
     const { seed } = await import('../src/db/seed.js');
     seed(db);
-    const row = db.prepare('SELECT COUNT(*) AS n, COUNT(DISTINCT category) AS c FROM products').get();
-    expect(row).toEqual({ n: 40, c: 5 });
+    const row = db.prepare('SELECT COUNT(*) AS n, COUNT(DISTINCT category_id) AS c FROM products').get();
+    expect(row).toEqual({ n: 40, c: 3 });
   });
 });

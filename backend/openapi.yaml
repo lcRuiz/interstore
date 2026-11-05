@@ -1,0 +1,181 @@
+openapi: 3.1.0
+info:
+  title: Store API
+  version: 0.1.0
+  description: |
+    API REST del catálogo con sistema de recompensas. Esta versión documenta solo
+    el catálogo (productos y categorías). Precios en COP, enteros.
+servers:
+  - url: http://localhost:3000
+security:
+  - demoUser: []
+components:
+  securitySchemes:
+    demoUser:
+      type: apiKey
+      in: header
+      name: X-User-Id
+      description: >
+        Sesión simulada (supuesto de la prueba técnica): id de un usuario sembrado
+        (1 = Ana Demo, 2 = Carlos Demo). No es autenticación real; cualquier cliente
+        puede suplantar a otro usuario.
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              examples: [VALIDATION_ERROR, PRODUCT_NOT_FOUND, MISSING_USER, UNKNOWN_USER, INVALID_USER_ID, INTERNAL_ERROR]
+            message:
+              type: string
+            details:
+              description: Presente en VALIDATION_ERROR.
+              type: array
+              items:
+                type: object
+                required: [location, path, message]
+                properties:
+                  location: { type: string, enum: [params, query, body] }
+                  path: { type: string }
+                  message: { type: string }
+    Category:
+      type: object
+      required: [slug, name]
+      properties:
+        slug: { type: string, pattern: '^[a-z0-9-]+$', examples: [ropa] }
+        name: { type: string, examples: [Ropa] }
+    Product:
+      type: object
+      required: [id, name, price, imageUrl, stock, pointsMultiplier, category]
+      properties:
+        id: { type: integer, minimum: 1 }
+        name: { type: string, maxLength: 120 }
+        price: { type: integer, minimum: 1, description: Precio en COP (entero). }
+        imageUrl: { type: string, format: uri }
+        stock: { type: integer, minimum: 0, description: 0 = agotado. }
+        pointsMultiplier: { type: integer, enum: [1, 2], description: Multiplicador de puntos de compra. }
+        category: { $ref: '#/components/schemas/Category' }
+    PageMeta:
+      type: object
+      required: [page, pageSize, total, totalPages]
+      properties:
+        page: { type: integer, minimum: 1 }
+        pageSize: { type: integer, minimum: 1, maximum: 50 }
+        total: { type: integer, minimum: 0, description: Filas que cumplen el filtro (sin paginar). }
+        totalPages: { type: integer, minimum: 0, description: 0 cuando no hay resultados. }
+  responses:
+    ValidationError:
+      description: Datos de entrada inválidos (VALIDATION_ERROR) o cabecera X-User-Id mal formada (INVALID_USER_ID).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Falta X-User-Id (MISSING_USER) o el usuario no existe (UNKNOWN_USER).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    InternalError:
+      description: Error inesperado. Cuerpo genérico, sin detalles internos.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: { code: INTERNAL_ERROR, message: Error interno del servidor } }
+paths:
+  /api/products:
+    get:
+      summary: Lista paginada de productos
+      description: >
+        Paginación, filtro, búsqueda y orden se resuelven en el servidor. Una página
+        fuera de rango responde 200 con `data: []` y el `meta` real. Una categoría
+        inexistente responde 200 con `data: []`. Los parámetros desconocidos se ignoran.
+      operationId: listProducts
+      security: [{ demoUser: [] }]
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 1000000, default: 1 }
+        - name: pageSize
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 50, default: 12 }
+        - name: category
+          in: query
+          description: Slug de la categoría (ver /api/categories).
+          schema: { type: string, pattern: '^[a-z0-9-]{1,50}$' }
+        - name: q
+          in: query
+          description: >
+            Búsqueda por subcadena en el nombre, sin distinguir mayúsculas ni tildes.
+            `%`, `_` y `\` se tratan como texto. Se recorta; vacío = sin filtro.
+          schema: { type: string, maxLength: 80 }
+        - name: sort
+          in: query
+          description: "`name` (A-Z sin tildes), `price` (menor a mayor) o `newest` (más reciente primero). Empata por id."
+          schema: { type: string, enum: [name, price, newest], default: newest }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Product' }
+                  meta: { $ref: '#/components/schemas/PageMeta' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/products/{id}:
+    get:
+      summary: Detalle de un producto
+      operationId: getProduct
+      security: [{ demoUser: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Product' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: PRODUCT_NOT_FOUND
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/categories:
+    get:
+      summary: Categorías del catálogo (ordenadas por nombre)
+      operationId: listCategories
+      security: [{ demoUser: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Category' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/InternalError' }
