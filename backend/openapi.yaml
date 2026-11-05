@@ -40,7 +40,7 @@ components:
                 type: object
                 required: [location, path, message]
                 properties:
-                  location: { type: string, enum: [params, query, body] }
+                  location: { type: string, enum: [params, query, body, header] }
                   path: { type: string }
                   message: { type: string }
     Category:
@@ -98,6 +98,39 @@ components:
       properties:
         data: { $ref: '#/components/schemas/Cart' }
         rewards: { $ref: '#/components/schemas/Rewards' }
+    OrderItem:
+      type: object
+      required: [productId, name, unitPrice, quantity, lineTotal]
+      properties:
+        productId: { type: integer, minimum: 1 }
+        name: { type: string, description: Copia del nombre del catálogo al comprar. }
+        unitPrice: { type: integer, minimum: 1, description: Copia del precio (COP) al comprar. }
+        quantity: { type: integer, minimum: 1 }
+        lineTotal: { type: integer, description: unitPrice * quantity. }
+    Order:
+      type: object
+      required: [id, status, total, totalItems, pointsAwarded, createdAt, items]
+      properties:
+        id: { type: integer, minimum: 1 }
+        status: { type: string, enum: [confirmed] }
+        total: { type: integer, minimum: 1, description: Suma de lineTotal, calculada en el servidor (COP). }
+        totalItems: { type: integer, minimum: 1 }
+        pointsAwarded: { type: integer, minimum: 0, description: Puntos PURCHASE de ESTE pedido (ledger). }
+        createdAt: { type: string, format: date-time }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OrderItem' }
+    CheckoutResult:
+      type: object
+      required: [data, rewards]
+      properties:
+        data: { $ref: '#/components/schemas/Order' }
+        rewards:
+          type: object
+          required: [awarded, balance]
+          properties:
+            awarded: { type: integer, minimum: 0, description: Puntos otorgados por ESTA petición (0 en replay). }
+            balance: { type: integer, minimum: 0, description: Saldo después. }
   responses:
     ValidationError:
       description: Datos de entrada inválidos (VALIDATION_ERROR) o cabecera X-User-Id mal formada (INVALID_USER_ID).
@@ -186,6 +219,65 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: PRODUCT_NOT_FOUND
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/orders:
+    post:
+      summary: Confirma el pedido con el carrito del usuario (checkout idempotente)
+      description: >
+        Sin body (un body con campos responde 400). Crea el pedido, descuenta stock, otorga puntos
+        PURCHASE (1 por cada $10.000 COP x multiplicador, redondeo por línea) y vacía el carrito, todo
+        en una transacción. Misma `Idempotency-Key` del mismo usuario = replay: 200 con el pedido original
+        y `rewards.awarded` 0, sin tocar stock, carrito ni puntos.
+      operationId: createOrder
+      security: [{ demoUser: [] }]
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { type: string, pattern: '^[A-Za-z0-9_-]{8,64}$', minLength: 8, maxLength: 64 }
+      responses:
+        '201':
+          description: Pedido creado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CheckoutResult' }
+        '200':
+          description: Replay de la misma clave; devuelve el pedido original.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CheckoutResult' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: EMPTY_CART; OUT_OF_STOCK (details.productId); QUANTITY_EXCEEDS_STOCK (details.productId, details.available).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/orders/{id}:
+    get:
+      summary: Pedido propio por id
+      operationId: getOrder
+      security: [{ demoUser: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer, minimum: 1 } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Order' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: ORDER_NOT_FOUND (no existe o es de otro usuario; nunca 403).
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }

@@ -128,7 +128,9 @@ BEGIN SELECT RAISE(ABORT, 'points_ledger is append-only'); END;
 |---|---|---|
 | `CART_ADD` | +10 | usuario y producto |
 | `FAVORITE_ADD` | +5 | usuario y producto |
-| `PURCHASE` | suma de `floor(subtotal_línea × multiplicador / 1000)` | pedido |
+| `PURCHASE` | suma de `floor(subtotal_línea × multiplicador / 10000)` | pedido |
+
+Nota (orders-api, decisión del usuario): `PURCHASE` otorga 1 punto por cada $10.000 COP × multiplicador, y **reemplaza** la fórmula original `/ 1000`. Ejemplos con el seed: Andes Runner (x2, $2.490.000, 1 unidad) = 498 puntos; Camiseta Esencial (x1, $590.000) = 59. El redondeo es por línea. Constante y función pura `purchasePoints` en `backend/src/modules/rewards/rewards.ts`. `CART_ADD` no cambia.
 
 Quitar del carrito o desmarcar un favorito no resta puntos. Las reglas viven en el código (versionadas y con tests), no en una tabla de configuración.
 

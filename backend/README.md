@@ -96,6 +96,8 @@ Las rutas que requieren usuario responden `401` si el header falta o el usuario 
 | `POST` | `/api/cart/items` | Sí | Agrega `{ productId, quantity? }` (suma si ya existe); `+10` puntos la primera vez por producto; `404 PRODUCT_NOT_FOUND`, `409 OUT_OF_STOCK`\|`QUANTITY_EXCEEDS_STOCK` |
 | `PATCH` | `/api/cart/items/:productId` | Sí | Fija la cantidad (1–99, ≤ stock); nunca da puntos; `404 CART_ITEM_NOT_FOUND` |
 | `DELETE` | `/api/cart/items/:productId` | Sí | Quita la línea (idempotente); no resta puntos |
+| `POST` | `/api/orders` | Sí | Checkout del carrito, sin body; header obligatorio `Idempotency-Key` (8–64 `[A-Za-z0-9_-]`). `201` pedido nuevo; `200` replay de la misma clave; puntos `PURCHASE` (1 por $10.000 × multiplicador); `409 EMPTY_CART`\|`OUT_OF_STOCK`\|`QUANTITY_EXCEEDS_STOCK` |
+| `GET` | `/api/orders/:id` | Sí | Pedido propio; `404 ORDER_NOT_FOUND` si no existe o es de otro usuario |
 
 Contrato completo en [`openapi.yaml`](openapi.yaml); detalle de la feature en `docs/features/products-api.md`.
 
