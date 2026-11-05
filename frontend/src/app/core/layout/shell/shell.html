@@ -5,8 +5,27 @@
       <span class="brand__name">Norte</span>
     </a>
 
-    <!-- Aquí se montan el indicador de puntos (features/rewards) y el acceso al carrito (features/cart). -->
-    <div class="header__actions"></div>
+    <div class="header__actions">
+      <!-- aria-live polite: el saldo y el premio se anuncian sin interrumpir la lectura. -->
+      <div class="points">
+        <app-icon [icon]="StarIcon" [size]="20" />
+        <span data-testid="points-balance" aria-live="polite" aria-atomic="true">
+          @if (balance() !== null) {
+            {{ balance() }} puntos
+          }
+          @if (lastAward() > 0) {
+            <span class="points__award">+{{ lastAward() }} puntos</span>
+          }
+        </span>
+      </div>
+      <a class="cart" routerLink="/cart" aria-label="Ver carrito">
+        <app-icon [icon]="BagIcon" [size]="24" />
+        <span class="cart__count" data-testid="cart-count" aria-live="polite" aria-atomic="true">
+          {{ totalItems() }}
+          <span class="visually-hidden">unidades en el carrito</span>
+        </span>
+      </a>
+    </div>
   </div>
 </header>
 

@@ -22,7 +22,21 @@
       <ul class="grid">
         @for (product of products(); track product.id; let i = $index) {
           <!-- La primera fila puede contener el LCP: se prioriza; el resto se carga en diferido. -->
-          <li><app-product-card [product]="product" [priority]="i < priorityImages" /></li>
+          <li>
+            <app-product-card [product]="product" [priority]="i < priorityImages">
+              <button
+                card-actions
+                type="button"
+                class="quick-add"
+                data-testid="quick-add"
+                [attr.aria-label]="'Agregar ' + product.name + ' al carrito'"
+                [disabled]="product.stock === 0 || cart.isPending(product.id)"
+                (click)="cart.add(product)"
+              >
+                Agregar
+              </button>
+            </app-product-card>
+          </li>
         }
       </ul>
     } @else if (current.status === 'empty') {

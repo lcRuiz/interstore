@@ -1,0 +1,80 @@
+<section class="page" aria-labelledby="product-title">
+  @let current = state();
+  @if (current.status === 'success') {
+    @let product = current.data;
+    <a class="back" routerLink="/">← Volver al catálogo</a>
+    <article class="detail">
+      <div class="media">
+        @if (imageSrc(); as src) {
+          <img
+            class="image"
+            [ngSrc]="src"
+            [alt]="product.name"
+            fill
+            priority
+            referrerpolicy="no-referrer"
+          />
+        }
+      </div>
+      <div class="info">
+        <p class="category" data-testid="category">{{ product.category.name }}</p>
+        <h1 id="product-title" class="name" data-testid="name">{{ product.name }}</h1>
+        <p class="price" data-testid="price">
+          {{ product.price | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+        </p>
+        <div class="tags">
+          @if (product.pointsMultiplier === 2) {
+            <span class="badge" data-testid="points-badge">Puntos x2</span>
+          }
+          @if (product.stock === 0) {
+            <span class="tag" data-testid="sold-out">Agotado</span>
+          }
+        </div>
+
+        @if (product.stock > 0) {
+          <div class="field">
+            <label for="quantity">Cantidad</label>
+            <select id="quantity" data-testid="quantity" (change)="selectQuantity($event)">
+              @for (n of quantities(); track n) {
+                <option [value]="n" [selected]="n === quantity()">{{ n }}</option>
+              }
+            </select>
+          </div>
+        }
+        <button
+          type="button"
+          class="add"
+          data-testid="add-to-cart"
+          [disabled]="product.stock === 0 || adding()"
+          (click)="add(product)"
+        >
+          Agregar al carrito
+        </button>
+
+        <!-- aria-live polite: anuncia puntos y errores de la acción sin interrumpir la lectura. -->
+        <p class="points" data-testid="points-message" aria-live="polite">
+          @if (award() > 0) {
+            ¡Ganaste +{{ award() }} puntos!
+          }
+        </p>
+        <p class="error" aria-live="polite">{{ notice() }}</p>
+      </div>
+    </article>
+  } @else if (notFound()) {
+    <div class="state">
+      <h1 id="product-title" class="name">Producto no encontrado</h1>
+      <a class="back" routerLink="/">Volver al catálogo</a>
+    </div>
+  } @else if (current.status === 'error') {
+    <app-error-state [error]="current.error" (retry)="reload()" />
+    <a class="back" routerLink="/">Volver al catálogo</a>
+  } @else {
+    <div class="detail" data-testid="product-skeleton" aria-hidden="true">
+      <div class="media skeleton"></div>
+      <div class="info">
+        <div class="skeleton skeleton__line"></div>
+        <div class="skeleton skeleton__line"></div>
+      </div>
+    </div>
+  }
+</section>

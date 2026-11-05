@@ -1,0 +1,49 @@
+<section class="page" aria-labelledby="cart-title">
+  <h1 id="cart-title" class="title">Tu carrito</h1>
+
+  <!-- aria-live polite: anuncia el fallo de una acción sin interrumpir al usuario. -->
+  <div class="notice" data-testid="cart-notice" aria-live="polite">
+    @if (store.notice(); as message) {
+      <p class="notice__text">
+        {{ message }}
+        <button type="button" class="notice__close" (click)="store.dismissNotice()">Cerrar</button>
+      </p>
+    }
+  </div>
+
+  @let current = store.state();
+  @if (current.status === 'success') {
+    <ul class="lines">
+      @for (item of current.data.items; track item.productId) {
+        <li>
+          <app-cart-line
+            [item]="item"
+            (quantityChange)="store.setQuantity(item.productId, $event)"
+            (remove)="store.remove(item.productId)"
+          />
+        </li>
+      }
+    </ul>
+    <dl class="summary">
+      <dt>Unidades</dt>
+      <dd data-testid="cart-units">{{ current.data.totalItems }}</dd>
+      <dt class="summary__total">Total</dt>
+      <dd class="summary__total" data-testid="cart-total">
+        {{ current.data.total | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+      </dd>
+    </dl>
+  } @else if (current.status === 'empty') {
+    <div class="empty">
+      <p class="empty__text">Tu carrito está vacío</p>
+      <a class="link" routerLink="/">Ver el catálogo</a>
+    </div>
+  } @else if (current.status === 'error') {
+    <app-error-state [error]="current.error" (retry)="store.load()" />
+  } @else {
+    <div class="skeleton" data-testid="cart-skeleton" aria-hidden="true">
+      <div class="skeleton__row"></div>
+      <div class="skeleton__row"></div>
+      <div class="skeleton__row"></div>
+    </div>
+  }
+</section>

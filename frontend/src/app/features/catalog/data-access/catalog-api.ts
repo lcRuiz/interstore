@@ -29,6 +29,18 @@ export class CatalogApi {
   }
 
   /**
+   * Obtiene un producto por id (`GET /api/products/:id`).
+   *
+   * @param id Entero positivo ya validado por quien llama.
+   * @throws ApiError `PRODUCT_NOT_FOUND` (404), `UNKNOWN_USER` (401), `NETWORK_ERROR` (status 0).
+   */
+  getProduct(id: number): Observable<Product> {
+    return this.http
+      .get<ApiResponse<Product>>(`${API_BASE_URL}/products/${id}`)
+      .pipe(map((response) => response.data));
+  }
+
+  /**
    * Lista las categorías (`GET /api/categories`), ordenadas por nombre.
    *
    * @throws ApiError `UNKNOWN_USER` (401), `INTERNAL_ERROR` (500), `NETWORK_ERROR` (status 0).

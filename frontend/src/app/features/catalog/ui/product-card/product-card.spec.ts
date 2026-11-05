@@ -1,3 +1,4 @@
+import { provideRouter } from '@angular/router';
 import { registerLocaleData } from '@angular/common';
 import localeEsCO from '@angular/common/locales/es-CO';
 import {
@@ -50,6 +51,7 @@ describe('ProductCard', () => {
     await TestBed.configureTestingModule({
       imports: [ProductCard, Host],
       providers: [
+        provideRouter([]),
         { provide: LOCALE_ID, useValue: 'es-CO' },
         { provide: DEFAULT_CURRENCY_CODE, useValue: 'COP' },
       ],

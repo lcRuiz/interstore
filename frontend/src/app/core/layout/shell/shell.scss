@@ -45,6 +45,38 @@
   gap: var(--space-3);
 }
 
+.points {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--text);
+  font: var(--text-body-s);
+}
+
+.points__award {
+  margin-left: var(--space-1);
+  color: var(--success);
+  font-weight: 600;
+}
+
+.cart {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 44px; // objetivo táctil mínimo
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-pill);
+  color: var(--text);
+  text-decoration: none;
+  font: var(--text-body-s);
+  font-weight: 600;
+}
+
+.cart__count {
+  min-width: var(--space-4);
+  text-align: center;
+}
+
 .main {
   flex: 1;
   padding-block: var(--space-5);
