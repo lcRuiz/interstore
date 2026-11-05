@@ -1,0 +1,131 @@
+@use 'breakpoints' as bp;
+
+:host {
+  display: block;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 720px;
+}
+
+.title {
+  font: var(--text-h2);
+  letter-spacing: var(--tracking-h2);
+}
+
+.subtitle {
+  font: var(--text-h4);
+  letter-spacing: var(--tracking-h4);
+}
+
+.number {
+  color: var(--text-muted);
+  font: var(--text-body-m);
+}
+
+.points {
+  color: var(--success);
+  font: var(--text-body-m);
+  font-weight: 600;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.line {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-1) var(--space-4);
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--border);
+  font: var(--text-body-m);
+
+  @include bp.up(md) {
+    grid-template-columns: 1fr auto auto;
+  }
+}
+
+.line__name {
+  overflow-wrap: anywhere;
+}
+
+.line__detail {
+  color: var(--text-muted);
+  font: var(--text-body-s);
+}
+
+.line__total {
+  text-align: right;
+  font-weight: 500;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface-subtle);
+  font: var(--text-body-m);
+
+  dd {
+    margin: 0;
+    text-align: right;
+  }
+}
+
+.summary__total {
+  font: var(--text-h4);
+  letter-spacing: var(--tracking-h4);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--accent);
+  font: var(--text-body-m);
+  font-weight: 500;
+}
+
+.state {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-block: var(--space-8);
+}
+
+.skeleton {
+  background: var(--surface-subtle);
+  border-radius: var(--radius-md);
+}
+
+.skeleton__title {
+  width: 60%;
+  height: var(--space-6);
+  margin-bottom: var(--space-4);
+}
+
+.skeleton__row {
+  height: 56px; // alto aproximado de una línea de pedido
+  margin-bottom: var(--space-3);
+}

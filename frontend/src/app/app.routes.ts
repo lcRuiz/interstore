@@ -19,5 +19,11 @@ export const routes: Routes = [
     title: 'Carrito · Norte',
     loadComponent: () => import('@features/cart/pages/cart-page/cart-page').then((m) => m.CartPage),
   },
+  {
+    path: 'orders/:id',
+    title: 'Pedido · Norte',
+    loadComponent: () =>
+      import('@features/orders/pages/order-page/order-page').then((m) => m.OrderPage),
+  },
   { path: '**', redirectTo: '' },
 ];

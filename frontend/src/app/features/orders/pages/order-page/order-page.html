@@ -1,0 +1,59 @@
+<section class="page" aria-labelledby="order-title">
+  @let current = state();
+  @if (current.status === 'success') {
+    @let order = current.data;
+    <h1 id="order-title" class="title">¡Pedido confirmado!</h1>
+    <p class="number">
+      Pedido n.º <strong data-testid="order-number">{{ order.id }}</strong>
+    </p>
+
+    <!-- aria-live polite: anuncia los puntos ganados sin interrumpir la lectura. -->
+    <div class="points" data-testid="order-points-live" aria-live="polite">
+      @if (order.pointsAwarded > 0) {
+        <p data-testid="order-points">Ganaste {{ order.pointsAwarded }} puntos</p>
+      }
+    </div>
+
+    <h2 class="subtitle">Productos</h2>
+    <ul class="lines">
+      @for (item of order.items; track item.productId) {
+        <li class="line" data-testid="order-line">
+          <span class="line__name">{{ item.name }}</span>
+          <span class="line__detail">
+            {{ item.quantity }} × {{ item.unitPrice | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+          </span>
+          <span class="line__total">
+            {{ item.lineTotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+          </span>
+        </li>
+      }
+    </ul>
+    <dl class="summary">
+      <dt>Unidades</dt>
+      <dd>{{ order.totalItems }}</dd>
+      <dt class="summary__total">Total</dt>
+      <dd class="summary__total" data-testid="order-total">
+        {{ order.total | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+      </dd>
+    </dl>
+    <nav class="actions" aria-label="Siguientes pasos">
+      <a class="link" routerLink="/">Seguir comprando</a>
+      <a class="link" routerLink="/cart">Ver carrito</a>
+    </nav>
+  } @else if (notFound()) {
+    <div class="state">
+      <h1 id="order-title" class="title">Pedido no encontrado</h1>
+      <a class="link" routerLink="/">Volver al catálogo</a>
+    </div>
+  } @else if (current.status === 'error') {
+    <h1 id="order-title" class="title">Tu pedido</h1>
+    <app-error-state [error]="current.error" (retry)="reload()" />
+    <a class="link" routerLink="/">Volver al catálogo</a>
+  } @else {
+    <div data-testid="order-skeleton" aria-hidden="true">
+      <div class="skeleton skeleton__title"></div>
+      <div class="skeleton skeleton__row"></div>
+      <div class="skeleton skeleton__row"></div>
+    </div>
+  }
+</section>

@@ -114,6 +114,74 @@ describe('CartPage', () => {
     req.flush({ data: cart(1), rewards: { awarded: 0, balance: 0 } });
   });
 
+  it('debe habilitar «Confirmar pedido» con líneas y enviar POST /api/orders al pulsarlo', async () => {
+    const { fixture, q } = create();
+    http.expectOne('/api/cart').flush({ data: cart(1) });
+    await fixture.whenStable();
+
+    const button = q('checkout') as HTMLButtonElement | null;
+    expect(button?.textContent).toContain('Confirmar pedido');
+    expect(button?.disabled).toBe(false);
+    button?.click();
+
+    const sent = http.match('/api/orders');
+    sent.forEach((req) => {
+      req.flush(null, { status: 500, statusText: 'Server Error' });
+    });
+    expect(sent).toHaveLength(1);
+    expect(sent[0]?.request.headers.has('Idempotency-Key')).toBe(true);
+  });
+
+  it('debe mostrar «Confirmando…» y deshabilitar el botón mientras se envía el pedido', async () => {
+    const { fixture, q } = create();
+    http.expectOne('/api/cart').flush({ data: cart(1) });
+    await fixture.whenStable();
+
+    q('checkout')?.click();
+    await fixture.whenStable();
+
+    const button = q('checkout') as HTMLButtonElement | null;
+    const label = button?.textContent;
+    const disabled = button?.disabled;
+    http.match('/api/orders').forEach((req) => {
+      req.flush(null, { status: 500, statusText: 'Server Error' });
+    });
+
+    // Se afirma después de vaciar las peticiones para no dejar abiertas ante un fallo.
+    expect(label).toContain('Confirmando…');
+    expect(disabled).toBe(true);
+  });
+
+  it('debe deshabilitar «Confirmar pedido» mientras hay una operación del carrito en vuelo', async () => {
+    const { fixture, q } = create();
+    http.expectOne('/api/cart').flush({ data: cart(1) });
+    await fixture.whenStable();
+
+    q('inc')?.click();
+    await fixture.whenStable();
+
+    const disabled = (q('checkout') as HTMLButtonElement | null)?.disabled;
+    http
+      .expectOne('/api/cart/items/1')
+      .flush({ data: cart(1), rewards: { awarded: 0, balance: 0 } });
+
+    expect(disabled).toBe(true);
+  });
+
+  it('debe anunciar el aviso de error del checkout en una región aria-live', async () => {
+    const { fixture, q } = create();
+    http.expectOne('/api/cart').flush({ data: cart(1) });
+    await fixture.whenStable();
+    q('checkout')?.click();
+
+    http.expectOne('/api/orders').flush(null, { status: 500, statusText: 'Server Error' });
+    await fixture.whenStable();
+
+    expect(q('checkout-notice')?.getAttribute('aria-live')).toBe('polite');
+    expect(q('checkout-notice')?.textContent?.trim()).not.toBe('');
+    expect(q('checkout')?.textContent).toContain('Reintentar');
+  });
+
   it('debe anunciar el aviso de error de una acción y revertir', async () => {
     const { fixture, q } = create();
     http.expectOne('/api/cart').flush({ data: cart(1) });
