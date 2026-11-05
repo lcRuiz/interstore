@@ -201,6 +201,44 @@ describe('CatalogPage', () => {
       req.flush({ data: [product(1)], meta: meta(1) });
     });
 
+    // B1 (revisión PR #2): `aria-busy="true"` indica que el contenido sigue cambiando y los lectores
+    // de pantalla pueden esperar a que termine. Solo corresponde mientras carga: en error y vacío
+    // el contenido ya es definitivo y el `role="alert"` debe anunciarse.
+    describe('aria-busy de la región de resultados', () => {
+      const results = () => q('.results');
+
+      it('debe marcar la región como ocupada mientras carga', async () => {
+        await open('/');
+
+        expect(results()?.getAttribute('aria-busy')).toBe('true');
+        productsReq().flush({ data: [], meta: meta(0) });
+      });
+
+      it('no debe marcar la región como ocupada cuando la carga tiene éxito', async () => {
+        await openWithData('/');
+
+        expect(results()?.hasAttribute('aria-busy')).toBe(false);
+      });
+
+      it('no debe marcar la región como ocupada en el estado vacío', async () => {
+        await open('/?q=zzz');
+        productsReq().flush({ data: [], meta: meta(0) });
+        await settle();
+
+        expect(q('app-empty-state')).not.toBeNull();
+        expect(results()?.hasAttribute('aria-busy')).toBe(false);
+      });
+
+      it('no debe marcar la región como ocupada en el estado de error', async () => {
+        await open('/');
+        productsReq().flush({}, { status: 500, statusText: 'Server Error' });
+        await settle();
+
+        expect(q('app-error-state')).not.toBeNull();
+        expect(results()?.hasAttribute('aria-busy')).toBe(false);
+      });
+    });
+
     it('debe mostrar el error con «Reintentar» y volver a pedir cuando es reintentable', async () => {
       await open('/');
       productsReq().flush({}, { status: 500, statusText: 'Server Error' });

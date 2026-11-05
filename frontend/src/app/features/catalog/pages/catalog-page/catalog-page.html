@@ -15,7 +15,8 @@
     (sortChange)="setSort($event)"
   />
 
-  <div class="results" [attr.aria-busy]="state().status === 'success' ? null : 'true'">
+  <!-- aria-busy solo mientras carga: en error y vacío el contenido ya es definitivo y debe anunciarse. -->
+  <div class="results" [attr.aria-busy]="state().status === 'loading' ? 'true' : null">
     @let current = state();
     @if (current.status === 'success') {
       <ul class="grid">
