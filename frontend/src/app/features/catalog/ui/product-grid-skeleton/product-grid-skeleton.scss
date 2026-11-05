@@ -1,0 +1,52 @@
+@use '../grid';
+
+.grid {
+  @include grid.product-grid;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.block {
+  display: block;
+  border-radius: var(--radius-sm);
+  background: var(--surface-subtle);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.media {
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius-md);
+}
+
+// Alturas = line-height de la tarjeta real (nombre 20, categoría 16, precio 24).
+.line--name {
+  width: 70%;
+  height: 20px;
+}
+
+.line--category {
+  width: 45%;
+  height: 16px;
+}
+
+.line--price {
+  width: 35%;
+  height: 24px;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+// El token de duración no cubre animaciones infinitas: se anula a mano.
+@media (prefers-reduced-motion: reduce) {
+  .block {
+    animation: none;
+  }
+}

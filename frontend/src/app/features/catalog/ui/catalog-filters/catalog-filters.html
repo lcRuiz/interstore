@@ -1,0 +1,43 @@
+<div class="filters">
+  <div class="field field--search">
+    <label class="label" for="catalog-search">Buscar productos</label>
+    <input
+      #search
+      id="catalog-search"
+      class="control"
+      type="search"
+      name="q"
+      autocomplete="off"
+      placeholder="Buscar por nombre"
+      [maxLength]="maxLength"
+      [value]="text()"
+      (input)="onSearchInput(search.value)"
+    />
+  </div>
+
+  <div class="field">
+    <label class="label" for="catalog-category">Categoría</label>
+    <select
+      #categorySelect
+      id="catalog-category"
+      class="control"
+      (change)="onCategory(categorySelect.value)"
+    >
+      <option value="" [selected]="!category()">Todas</option>
+      @for (item of categories(); track item.slug) {
+        <option [value]="item.slug" [selected]="item.slug === category()">{{ item.name }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="field">
+    <label class="label" for="catalog-sort">Ordenar por</label>
+    <select #sortSelect id="catalog-sort" class="control" (change)="onSort(sortSelect.value)">
+      @for (option of sortOptions; track option.value) {
+        <option [value]="option.value" [selected]="option.value === sort()">
+          {{ option.label }}
+        </option>
+      }
+    </select>
+  </div>
+</div>

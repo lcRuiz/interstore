@@ -1,0 +1,31 @@
+<article class="card" [class.card--sold-out]="soldOut()">
+  <div class="media">
+    @if (imageSrc(); as src) {
+      <img
+        class="image"
+        [ngSrc]="src"
+        [alt]="product().name"
+        [width]="imageSize"
+        [height]="imageSize"
+        referrerpolicy="no-referrer"
+      />
+    }
+    @if (soldOut()) {
+      <span class="tag" data-testid="sold-out">Agotado</span>
+    }
+    <!-- Punto de extensión: acciones (carrito, favoritos) que aportan otras features. -->
+    <div class="actions">
+      <ng-content select="[card-actions]" />
+    </div>
+  </div>
+  <div class="info">
+    <h3 class="name" data-testid="name">{{ product().name }}</h3>
+    <p class="category" data-testid="category">{{ product().category.name }}</p>
+    <p class="price" data-testid="price">
+      {{ product().price | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+    </p>
+    @if (product().pointsMultiplier === 2) {
+      <span class="badge" data-testid="points-badge">Puntos x2</span>
+    }
+  </div>
+</article>

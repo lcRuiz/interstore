@@ -1,0 +1,49 @@
+<section class="container page" aria-labelledby="catalog-title">
+  <header class="header">
+    <h1 id="catalog-title" class="title">Catálogo</h1>
+    <!-- aria-live polite: anuncia el total sin interrumpir lo que el usuario esté leyendo. -->
+    <p class="count" data-testid="results-count" aria-live="polite">{{ resultsLabel() }}</p>
+  </header>
+
+  <app-catalog-filters
+    [categories]="categories()"
+    [category]="query().category"
+    [q]="query().q ?? ''"
+    [sort]="query().sort"
+    (categoryChange)="setCategory($event)"
+    (searchChange)="setSearch($event)"
+    (sortChange)="setSort($event)"
+  />
+
+  <div class="results" [attr.aria-busy]="state().status === 'success' ? null : 'true'">
+    @let current = state();
+    @if (current.status === 'success') {
+      <ul class="grid">
+        @for (product of products(); track product.id) {
+          <li><app-product-card [product]="product" /></li>
+        }
+      </ul>
+    } @else if (current.status === 'empty') {
+      <app-empty-state
+        message="No hay productos para este filtro"
+        actionLabel="Limpiar filtros"
+        (action)="clearFilters()"
+      />
+    } @else if (current.status === 'error') {
+      <app-error-state [error]="current.error" (retry)="retry()" />
+    } @else {
+      <app-product-grid-skeleton />
+    }
+  </div>
+
+  @if (meta(); as m) {
+    @if (state().status === 'success') {
+      <app-pagination
+        class="pagination"
+        [page]="m.page"
+        [totalPages]="m.totalPages"
+        (pageChange)="goToPage($event)"
+      />
+    }
+  }
+</section>
