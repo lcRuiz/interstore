@@ -31,7 +31,7 @@ export interface PageMeta {
 
 export type ProductsService = ReturnType<typeof createProductsService>;
 
-function toDto(record: ProductRecord): ProductDto {
+export function toProductDto(record: ProductRecord): ProductDto {
   return {
     id: record.id,
     name: record.name,
@@ -53,7 +53,7 @@ export function createProductsService(repo: ProductsRepository) {
     list(query: ListProductsQuery): { data: ProductDto[]; meta: PageMeta } {
       const { rows, total } = repo.list(query);
       return {
-        data: rows.map(toDto),
+        data: rows.map(toProductDto),
         meta: {
           page: query.page,
           pageSize: query.pageSize,
@@ -67,7 +67,7 @@ export function createProductsService(repo: ProductsRepository) {
     getById(id: number): ProductDto {
       const record = repo.findById(id);
       if (!record) throw AppError.notFound('PRODUCT_NOT_FOUND', 'Producto no encontrado');
-      return toDto(record);
+      return toProductDto(record);
     },
 
     /** Categorías para el filtro del catálogo. */
