@@ -1,0 +1,48 @@
+<article class="line">
+  <div class="media">
+    @if (imageSrc(); as src) {
+      <img
+        class="image"
+        [ngSrc]="src"
+        [alt]="item().product.name"
+        width="96"
+        height="96"
+        referrerpolicy="no-referrer"
+      />
+    }
+  </div>
+  <div class="info">
+    <a class="name" [routerLink]="['/products', item().productId]">{{ item().product.name }}</a>
+    <p class="price">{{ item().product.price | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</p>
+  </div>
+  <div class="stepper" role="group" [attr.aria-label]="'Cantidad de ' + item().product.name">
+    <button
+      type="button"
+      class="step"
+      data-testid="dec"
+      aria-label="Disminuir cantidad"
+      [disabled]="!canDecrease()"
+      (click)="quantityChange.emit(item().quantity - 1)"
+    >
+      <app-icon [icon]="MinusIcon" [size]="16" />
+    </button>
+    <span class="qty" data-testid="qty">{{ item().quantity }}</span>
+    <button
+      type="button"
+      class="step"
+      data-testid="inc"
+      aria-label="Aumentar cantidad"
+      [disabled]="!canIncrease()"
+      (click)="quantityChange.emit(item().quantity + 1)"
+    >
+      <app-icon [icon]="PlusIcon" [size]="16" />
+    </button>
+  </div>
+  <p class="total" data-testid="line-total">
+    {{ item().lineTotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+  </p>
+  <button type="button" class="remove" data-testid="remove" (click)="remove.emit()">
+    <app-icon [icon]="TrashIcon" [size]="16" />
+    <span>Quitar</span>
+  </button>
+</article>

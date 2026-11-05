@@ -8,6 +8,7 @@ import {
   untracked,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { CartStore } from '@features/cart/data-access/cart-store';
 import { ErrorState } from '@shared/ui/error-state/error-state';
 import { EmptyState } from '@shared/ui/empty-state/empty-state';
 import { Pagination } from '@shared/ui/pagination/pagination';
@@ -35,6 +36,8 @@ import { ProductGridSkeleton } from '../../ui/product-grid-skeleton/product-grid
 })
 export class CatalogPage {
   private readonly store = inject(CatalogStore);
+  /** Carrito compartido: el botón «Agregar» de cada tarjeta suma una unidad. */
+  protected readonly cart = inject(CartStore);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 

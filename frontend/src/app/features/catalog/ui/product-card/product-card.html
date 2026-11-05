@@ -20,7 +20,10 @@
     </div>
   </div>
   <div class="info">
-    <h3 class="name" data-testid="name">{{ product().name }}</h3>
+    <h3 class="name" data-testid="name">
+      <!-- El enlace se estira sobre la tarjeta (::after); el slot de acciones queda por encima. -->
+      <a class="link" [routerLink]="['/products', product().id]">{{ product().name }}</a>
+    </h3>
     <p class="category" data-testid="category">{{ product().category.name }}</p>
     <p class="price" data-testid="price">
       {{ product().price | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}

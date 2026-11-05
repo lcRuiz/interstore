@@ -1,9 +1,11 @@
 import { CurrencyPipe, NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { httpsUrlOrNull } from '@shared/utils/https-url';
 import type { Product } from '../../data-access/catalog.types';
 
 /**
- * Tarjeta presentacional de producto: imagen, nombre, categoría, precio e insignias.
+ * Tarjeta presentacional de producto: imagen, nombre (enlace al detalle), categoría, precio e insignias.
  *
  * Sin acciones propias: el padre proyecta botones (carrito, favoritos) en el slot
  * `[card-actions]`, que se superpone a la imagen.
@@ -15,7 +17,7 @@ import type { Product } from '../../data-access/catalog.types';
  */
 @Component({
   selector: 'app-product-card',
-  imports: [CurrencyPipe, NgOptimizedImage],
+  imports: [CurrencyPipe, NgOptimizedImage, RouterLink],
   templateUrl: './product-card.html',
   styleUrl: './product-card.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,12 +34,4 @@ export class ProductCard {
   protected readonly soldOut = computed(() => this.product().stock === 0);
   /** URL de la imagen solo si es `https:`; cualquier otro esquema se descarta (SR-002). */
   protected readonly imageSrc = computed(() => httpsUrlOrNull(this.product().imageUrl));
-}
-
-function httpsUrlOrNull(value: string): string | null {
-  try {
-    return new URL(value).protocol === 'https:' ? value : null;
-  } catch {
-    return null;
-  }
 }
