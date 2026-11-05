@@ -1,0 +1,33 @@
+@use '../../ui/grid';
+
+:host {
+  display: block;
+  padding-block: var(--space-5) var(--space-8);
+}
+
+.header {
+  margin-bottom: var(--space-5);
+}
+
+.title {
+  font: var(--text-h2);
+  letter-spacing: var(--tracking-h2);
+}
+
+.count {
+  margin-top: var(--space-1);
+  color: var(--text-muted);
+  font: var(--text-body-s);
+}
+
+.results {
+  margin-top: var(--space-5);
+}
+
+.grid {
+  @include grid.product-grid;
+}
+
+.pagination {
+  margin-top: var(--space-7);
+}

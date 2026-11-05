@@ -1,0 +1,19 @@
+// Grilla de productos compartida por la página y el skeleton: al usar el mismo mixin,
+// la carga no provoca saltos de layout. Mobile-first: 2 columnas, 3 desde md y 4 desde lg.
+@use 'breakpoints' as bp;
+
+@mixin product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5) var(--gutter);
+  padding: 0;
+  list-style: none;
+
+  @include bp.up(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  @include bp.up(lg) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

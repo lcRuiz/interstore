@@ -1,0 +1,39 @@
+@if (totalPages() > 1) {
+  <nav aria-label="Paginación">
+    <ul class="list">
+      <li>
+        <button type="button" class="control" [disabled]="page() <= 1" (click)="goTo(page() - 1)">
+          Anterior
+        </button>
+      </li>
+      @for (item of items(); track item.key) {
+        <li>
+          @if (item.page !== null) {
+            <button
+              type="button"
+              class="control"
+              [class.control--current]="item.page === page()"
+              [attr.aria-label]="'Página ' + item.page"
+              [attr.aria-current]="item.page === page() ? 'page' : null"
+              (click)="goTo(item.page)"
+            >
+              {{ item.page }}
+            </button>
+          } @else {
+            <span class="gap" aria-hidden="true">…</span>
+          }
+        </li>
+      }
+      <li>
+        <button
+          type="button"
+          class="control"
+          [disabled]="page() >= totalPages()"
+          (click)="goTo(page() + 1)"
+        >
+          Siguiente
+        </button>
+      </li>
+    </ul>
+  </nav>
+}

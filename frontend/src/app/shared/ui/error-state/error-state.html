@@ -1,0 +1,7 @@
+<div class="box" role="alert">
+  <p class="title">No pudimos cargar los datos</p>
+  <p class="message">{{ message() }}</p>
+  @if (error().retryable) {
+    <button type="button" class="action" (click)="retry.emit()">Reintentar</button>
+  }
+</div>

@@ -1,0 +1,86 @@
+:host {
+  display: block;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+// Proporción 4/5 del diseño; la imagen cuadrada se recorta con object-fit.
+.media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--surface-subtle);
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card--sold-out .image {
+  opacity: 0.55;
+}
+
+.tag {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--surface-subtle);
+  color: var(--text);
+  font: var(--text-overline);
+  letter-spacing: var(--tracking-caption);
+}
+
+.actions {
+  position: absolute;
+  inset: auto var(--space-2) var(--space-2) var(--space-2);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+
+  &:empty {
+    display: none;
+  }
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.name {
+  font: var(--text-body-s);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.category {
+  font: var(--text-caption);
+  letter-spacing: var(--tracking-caption);
+  color: var(--text-muted);
+}
+
+.price {
+  font: var(--text-body-m);
+  font-weight: 500;
+}
+
+.badge {
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  font: var(--text-caption);
+  font-weight: 600;
+}

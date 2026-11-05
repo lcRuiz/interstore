@@ -1,0 +1,31 @@
+.box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-8) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  text-align: center;
+}
+
+.message {
+  font: var(--text-h4);
+  letter-spacing: var(--tracking-h4);
+}
+
+.action {
+  min-height: 44px; // objetivo táctil mínimo
+  padding-inline: var(--space-5);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+  font: var(--text-body-s);
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--accent-hover);
+  }
+}
