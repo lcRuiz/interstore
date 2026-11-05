@@ -1,0 +1,15 @@
+<header class="header">
+  <div class="container header__inner">
+    <a class="brand" routerLink="/" aria-label="Norte, ir al inicio">
+      <app-icon [icon]="StoreIcon" [size]="24" />
+      <span class="brand__name">Norte</span>
+    </a>
+
+    <!-- Aquí se montan el indicador de puntos (features/rewards) y el acceso al carrito (features/cart). -->
+    <div class="header__actions"></div>
+  </div>
+</header>
+
+<main class="main container">
+  <router-outlet />
+</main>

@@ -1,0 +1,5 @@
+// Punto de entrada de estilos globales. No agregar estilos aquí: usar los parciales de src/styles/.
+@use '@fontsource-variable/geist';
+@use '@fontsource-variable/geist-mono';
+@use 'tokens';
+@use 'base';

@@ -1,0 +1,207 @@
+// Tokens del sistema de diseño NORTE.
+// Fuente: design/project/data.js (scales, semantic, type, spacing, radius, shadow, motion),
+// con la misma transformación que "Tokens exportables" de Design System.dc.html.
+// Este archivo es la ÚNICA fuente de valores visuales del frontend: los componentes
+// consumen los semánticos (--bg, --text, --accent…) y nunca hex o px sueltos.
+@use 'breakpoints' as bp;
+
+:root {
+  color-scheme: light;
+
+  // ── Escalas ────────────────────────────────────────────────
+  --neutral-100: #faf9f7;
+  --neutral-200: #f3f1ed;
+  --neutral-300: #e7e4de;
+  --neutral-400: #d4d0c8;
+  --neutral-500: #a9a49a;
+  --neutral-600: #747067;
+  --neutral-700: #5c5850;
+  --neutral-800: #2a2825;
+  --neutral-900: #111111;
+
+  --accent-100: #fbeee8;
+  --accent-200: #f5d6c8;
+  --accent-300: #ebb59d;
+  --accent-400: #dd8e6b;
+  --accent-500: #c96a43;
+  --accent-600: #a9522f;
+  --accent-700: #8a4126;
+  --accent-800: #6b321e;
+  --accent-900: #4a2315;
+
+  --success-100: #e6f2ea;
+  --success-200: #c3e0cd;
+  --success-300: #93c7a6;
+  --success-400: #5fa97d;
+  --success-500: #3d8f60;
+  --success-600: #2e7d4f;
+  --success-700: #24643f;
+  --success-800: #1b4b30;
+  --success-900: #123320;
+
+  --warning-100: #fbf1dc;
+  --warning-200: #f6dfae;
+  --warning-300: #eec774;
+  --warning-400: #e2aa3c;
+  --warning-500: #c98a0b;
+  --warning-600: #9a6a00;
+  --warning-700: #7a5400;
+  --warning-800: #5a3e00;
+  --warning-900: #3d2a00;
+
+  --error-100: #fbe9e7;
+  --error-200: #f5cbc6;
+  --error-300: #eba299;
+  --error-400: #de7266;
+  --error-500: #cc4637;
+  --error-600: #b3261e;
+  --error-700: #8f1e18;
+  --error-800: #6b1712;
+  --error-900: #47100c;
+
+  --info-100: #e6eef8;
+  --info-200: #c5d6ee;
+  --info-300: #98b7e0;
+  --info-400: #6893cf;
+  --info-500: #3f73bc;
+  --info-600: #2b5fa6;
+  --info-700: #224b84;
+  --info-800: #193862;
+  --info-900: #112541;
+
+  // ── Semánticos (modo claro) ────────────────────────────────
+  --bg: #ffffff;
+  --surface: var(--neutral-100);
+  --surface-subtle: var(--neutral-200);
+  --border: var(--neutral-300);
+  --border-strong: var(--neutral-400);
+  --text: var(--neutral-900);
+  --text-muted: var(--neutral-700);
+  --text-subtle: var(--neutral-600);
+  --accent: var(--accent-600);
+  --accent-hover: var(--accent-700);
+  --accent-soft: var(--accent-100);
+  --on-accent: #ffffff;
+  --focus-ring: var(--accent-600);
+  --success: var(--success-600);
+  --warning: var(--warning-700);
+  --error: var(--error-600);
+  --info: var(--info-600);
+
+  // ── Tipografía ─────────────────────────────────────────────
+  --font-sans: 'Geist Variable', 'Geist', system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', 'Geist Mono', ui-monospace, monospace;
+
+  // Uso: font: var(--text-h2); letter-spacing: var(--tracking-h2);
+  --text-display: 500 64px/68px var(--font-sans);
+  --tracking-display: -0.03em;
+  --text-h1: 500 48px/56px var(--font-sans);
+  --tracking-h1: -0.025em;
+  --text-h2: 500 36px/44px var(--font-sans);
+  --tracking-h2: -0.02em;
+  --text-h3: 500 28px/36px var(--font-sans);
+  --tracking-h3: -0.015em;
+  --text-h4: 600 20px/28px var(--font-sans);
+  --tracking-h4: -0.01em;
+  --text-body-l: 400 18px/28px var(--font-sans);
+  --tracking-body-l: 0;
+  --text-body-m: 400 16px/24px var(--font-sans);
+  --tracking-body-m: 0;
+  --text-body-s: 400 14px/20px var(--font-sans);
+  --tracking-body-s: 0;
+  --text-caption: 400 12px/16px var(--font-sans);
+  --tracking-caption: 0.01em;
+  --text-overline: 600 11px/16px var(--font-sans);
+  --tracking-overline: 0.08em;
+
+  // ── Espaciado (escala de 4) ────────────────────────────────
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+
+  // ── Radios, sombras, movimiento ────────────────────────────
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 999px;
+
+  --shadow-1: 0 1px 2px rgba(17, 17, 17, 0.06);
+  --shadow-2: 0 4px 12px rgba(17, 17, 17, 0.08);
+  --shadow-3: 0 12px 32px rgba(17, 17, 17, 0.12);
+
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 250ms;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  // ── Layout ─────────────────────────────────────────────────
+  --container: 1280px;
+  --page-margin: 16px; // mobile: 4 columnas, gutter 16
+  --gutter: 16px;
+}
+
+// Tablet: 8 columnas, gutter 20, margen 32.
+@include bp.up(md) {
+  :root {
+    --page-margin: 32px;
+    --gutter: 20px;
+  }
+}
+
+// Desktop: 12 columnas, gutter 24, contenedor 1280.
+@include bp.up(lg) {
+  :root {
+    --gutter: 24px;
+  }
+}
+
+// Tamaños móviles del diseño (columna "mobileSize" de data.js).
+// SUPUESTO: el diseño no define line-height móvil; se deriva proporcionalmente y se redondea a 2px.
+@include bp.down(md) {
+  :root {
+    --text-display: 500 40px/44px var(--font-sans);
+    --text-h1: 500 34px/40px var(--font-sans);
+    --text-h2: 500 28px/34px var(--font-sans);
+    --text-h3: 500 22px/28px var(--font-sans);
+    --text-h4: 600 18px/26px var(--font-sans);
+    --text-body-l: 400 17px/26px var(--font-sans);
+  }
+}
+
+// ── Modo oscuro: <html data-theme="dark"> ────────────────────
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #111111;
+  --surface: #1c1b19;
+  --surface-subtle: #252320;
+  --border: #2f2d2a;
+  --border-strong: #45423d;
+  --text: #f3f1ed;
+  --text-muted: #a9a49a;
+  --text-subtle: #8c877d;
+  --accent: var(--accent-400);
+  --accent-hover: var(--accent-300);
+  --accent-soft: #3a2219;
+  --on-accent: #111111;
+  --focus-ring: var(--accent-400);
+  --success: var(--success-400);
+  --warning: var(--warning-400);
+  --error: var(--error-400);
+  --info: var(--info-400);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+  }
+}
