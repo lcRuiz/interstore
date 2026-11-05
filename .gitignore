@@ -1,6 +1,8 @@
 node_modules/
 dist/
 design/
+# Estado local del flujo de agentes (ver .claude/workflow/README.md)
+.workflow/
 .env
 *.log
 .DS_Store
