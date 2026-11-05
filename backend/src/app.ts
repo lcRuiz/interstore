@@ -3,6 +3,9 @@ import express, { type Express } from 'express';
 import type { Db } from './db/connection.js';
 import { errorHandler, notFoundHandler } from './errors/error-handler.js';
 import { currentUser } from './middleware/current-user.js';
+import { createCartRepository } from './modules/cart/cart.repository.js';
+import { createCartRouter } from './modules/cart/cart.routes.js';
+import { createCartService } from './modules/cart/cart.service.js';
 import { createCategoriesRouter } from './modules/products/categories.routes.js';
 import { createProductsRepository } from './modules/products/products.repository.js';
 import { createProductsRouter } from './modules/products/products.routes.js';
@@ -29,11 +32,14 @@ export function createApp({ db, corsOrigin }: AppDeps): Express {
   const requireUser = currentUser(users);
   const productsService = createProductsService(createProductsRepository(db));
 
+  const cartService = createCartService(db, createCartRepository(db));
+
   app.get('/api/health', (_req, res) => {
     res.json({ data: { status: 'ok' } });
   });
   app.use('/api/me', requireUser, createMeRouter());
   app.use('/api/products', requireUser, createProductsRouter(productsService));
+  app.use('/api/cart', requireUser, createCartRouter(cartService));
   app.use('/api/categories', requireUser, createCategoriesRouter(productsService));
 
   app.use(notFoundHandler);

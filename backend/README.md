@@ -92,6 +92,10 @@ Las rutas que requieren usuario responden `401` si el header falta o el usuario 
 | `GET` | `/api/products` | Sí | Catálogo paginado: `page`, `pageSize` (1–50), `category` (slug), `q` (≤ 80), `sort` (`name`\|`price`\|`newest`) |
 | `GET` | `/api/products/:id` | Sí | Detalle de un producto (`404 PRODUCT_NOT_FOUND`) |
 | `GET` | `/api/categories` | Sí | Categorías (`slug`, `name`) |
+| `GET` | `/api/cart` | Sí | Carrito del usuario: `items`, `totalItems`, `total` (calculados en el servidor) |
+| `POST` | `/api/cart/items` | Sí | Agrega `{ productId, quantity? }` (suma si ya existe); `+10` puntos la primera vez por producto; `404 PRODUCT_NOT_FOUND`, `409 OUT_OF_STOCK`\|`QUANTITY_EXCEEDS_STOCK` |
+| `PATCH` | `/api/cart/items/:productId` | Sí | Fija la cantidad (1–99, ≤ stock); nunca da puntos; `404 CART_ITEM_NOT_FOUND` |
+| `DELETE` | `/api/cart/items/:productId` | Sí | Quita la línea (idempotente); no resta puntos |
 
 Contrato completo en [`openapi.yaml`](openapi.yaml); detalle de la feature en `docs/features/products-api.md`.
 
