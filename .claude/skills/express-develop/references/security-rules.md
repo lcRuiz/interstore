@@ -37,7 +37,15 @@ db.prepare('SELECT id, name FROM products WHERE category = ?').all(category);
 const SORT = { name: 'name', price: 'price' } as const;
 db.prepare(`SELECT … ORDER BY ${SORT[query.sort]}, id LIMIT ?`).all(limit);
 ```
-**Origen:** línea base, 2026-11-05.
+Filtros opcionales: arma el `WHERE` uniendo solo fragmentos **constantes** con `?` (`'c.slug = ?'`, `"p.search_name LIKE ? ESCAPE '\'"`) y empuja los valores a un arreglo de parámetros; el texto del usuario nunca forma parte de la cadena SQL. Para búsquedas sin tildes ni mayúsculas, guarda una columna normalizada (`search_name`) con una única función compartida y normaliza `q` con ella (`LOWER()` de SQLite solo cubre ASCII). Ordena `name` por esa columna y desempata siempre por `id`.
+```ts
+const where: string[] = [];
+const params: Array<string | number> = [];
+if (category) { where.push('c.slug = ?'); params.push(category); }
+if (needle) { where.push("p.search_name LIKE ? ESCAPE '\'"); params.push(`%${escapeLike(needle)}%`); }
+db.prepare(`SELECT … ${where.length ? ' WHERE ' + where.join(' AND ') : ''} ORDER BY ${ORDER_BY[sort]} LIMIT ? OFFSET ?`);
+```
+**Origen:** línea base, 2026-11-05; refinada en products-api, 2026-11-05 (`backend/src/modules/products/products.repository.ts`).
 
 ### SRB-003 · A01:2025 Broken Access Control · IDOR/BOLA
 **Regla:** filtra cada acceso a un recurso de usuario por el dueño obtenido de la sesión (`WHERE id = ? AND user_id = ?`) y responde 404 si no coincide; evita buscar por id y comparar después, o aceptar `userId` del body, query o ruta, porque cualquier usuario podría leer o modificar recursos ajenos.
@@ -67,7 +75,12 @@ repo.insert(input);
 
 ### SRB-007 · A06:2025 Insecure Design · Límites
 **Regla:** fija un límite de tamaño de body (`express.json({ limit })`), un `pageSize` máximo, longitudes máximas en los esquemas y rate limiting en endpoints sensibles; evita listados sin límite o acciones repetibles sin control (otorgar puntos, checkout), porque permiten DoS y abuso de reglas de negocio. Usa claves de idempotencia o `UNIQUE` en operaciones que no deben duplicarse.
-**Origen:** línea base, 2026-11-05 (`points_ledger UNIQUE(user_id, action, ref_id)`).
+Acota también `page` (tope explícito): `OFFSET = (page - 1) * pageSize` con `page` ~1e20 supera el rango entero de SQLite y acaba en 500. Valida ids de ruta con una regex decimal (`/^[1-9]\d{0,9}$/`) en lugar de `z.coerce.number()`, que acepta `1e3`, `0x10` y espacios.
+```ts
+page: z.coerce.number().int().min(1).max(1_000_000).default(1),
+id: z.string().regex(/^[1-9]\d{0,9}$/).transform(Number),
+```
+**Origen:** línea base, 2026-11-05 (`points_ledger UNIQUE(user_id, action, ref_id)`); refinada en products-api, 2026-11-05 (`products.schemas.ts`).
 
 ### SRB-008 · A09:2025 Security Logging and Alerting Failures · Logs
 **Regla:** registra eventos con campos estructurados, id de correlación y redacción de `password`, `token`, `authorization`, cookies y PII; evita registrar bodies o headers completos y concatenar entradas del usuario en el mensaje, porque filtran datos y permiten falsificar entradas.
@@ -83,7 +96,8 @@ repo.insert(input);
 
 ### SRB-011 · A10:2025 Mishandling of Exceptional Conditions · Fallos parciales
 **Regla:** agrupa en una transacción (`BEGIN IMMEDIATE`) toda operación multi-sentencia y lee los datos de control (stock, saldo) dentro de ella; evita `catch` vacíos y continuar tras un error parcial, porque dejan la base inconsistente o permiten vender sin stock.
-**Origen:** línea base, 2026-11-05 (`backend/src/db/connection.ts` → `transaction`).
+Migraciones: aplica cada una en su propia transacción **junto con** `PRAGMA user_version = N` (SQLite lo revierte con la transacción), valida que las versiones sean consecutivas, rechaza una base con `user_version` mayor que la última migración conocida y nunca edites una migración ya aplicada; cierra la conexión si `openDatabase` falla a mitad.
+**Origen:** línea base, 2026-11-05 (`backend/src/db/connection.ts` → `transaction`); refinada en products-api, 2026-11-05 (`backend/src/db/migrate.ts`).
 
 ### SRB-012 · A07:2025 Authentication Failures · Identidad
 **Regla:** obtén la identidad solo del middleware de autenticación (sesión o token verificado) y nunca de campos del body; mantén mensajes y tiempos iguales para "usuario inexistente" y "credencial inválida".

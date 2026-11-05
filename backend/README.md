@@ -7,7 +7,7 @@ Stack: **Node.js + Express 5 + TypeScript + SQLite** (`node:sqlite`) + **Zod**.
 
 | Herramienta | Versión |
 |---|---|
-| Node.js | **22.13 o superior** (probado con 24.x) — incluye `node:sqlite`, no requiere compilar binarios nativos |
+| Node.js | **22.16 o superior** (probado con 24.x) — incluye `node:sqlite` (opción `timeout` desde 22.16), no requiere compilar binarios nativos |
 | npm | 10 o superior |
 
 ```bash
@@ -44,7 +44,7 @@ Desde la carpeta `backend/`:
    npm run dev
    ```
 
-   La API queda en `http://localhost:3000`. Al arrancar se crea la base de datos y, si está vacía, se cargan los datos de demo (40 productos en 5 categorías y 2 usuarios).
+   La API queda en `http://localhost:3000`. Al arrancar se crea la base de datos y, si está vacía, se aplican las migraciones pendientes y, si no hay productos, se cargan los datos de demo (40 productos en 3 categorías —12 del diseño más relleno— y 2 usuarios).
 
 4. **Verificar**
 
@@ -54,6 +54,10 @@ Desde la carpeta `backend/`:
 
    ```bash
    curl -H "X-User-Id: 1" http://localhost:3000/api/me
+   ```
+
+   ```bash
+   curl -H "X-User-Id: 1" "http://localhost:3000/api/products?page=1&pageSize=10&category=ropa&q=merino&sort=price"
    ```
 
 ## Scripts
@@ -66,7 +70,7 @@ Desde la carpeta `backend/`:
 | `npm test` | Ejecuta la suite de tests (Vitest + supertest, base en memoria) |
 | `npm run test:watch` | Tests en modo watch |
 | `npm run typecheck` | Verificación de tipos sin emitir archivos |
-| `npm run db:reset` | Borra la base local y la recrea con los datos de demo |
+| `npm run db:reset` | **Borra** la base local (`DB_PATH`) y la recrea migrada y con datos de demo |
 
 ## Usuarios de demo
 
@@ -85,12 +89,25 @@ Las rutas que requieren usuario responden `401` si el header falta o el usuario 
 |---|---|---|---|
 | `GET` | `/api/health` | No | Estado de la API |
 | `GET` | `/api/me` | Sí | Perfil y saldo de puntos del usuario actual |
+| `GET` | `/api/products` | Sí | Catálogo paginado: `page`, `pageSize` (1–50), `category` (slug), `q` (≤ 80), `sort` (`name`\|`price`\|`newest`) |
+| `GET` | `/api/products/:id` | Sí | Detalle de un producto (`404 PRODUCT_NOT_FOUND`) |
+| `GET` | `/api/categories` | Sí | Categorías (`slug`, `name`) |
+
+Contrato completo en [`openapi.yaml`](openapi.yaml); detalle de la feature en `docs/features/products-api.md`.
 
 Todas las respuestas exitosas usan `{ "data": ... }`. Los errores siempre tienen la forma:
 
 ```json
 { "error": { "code": "VALIDATION_ERROR", "message": "Datos de entrada inválidos", "details": [] } }
 ```
+
+## Base de datos y migraciones
+
+El esquema vive en migraciones versionadas (`src/db/migrations/NNNN_nombre.ts`, registradas en `src/db/migrate.ts`). La versión aplicada se guarda en `PRAGMA user_version`; al abrir la base se aplican, en orden y cada una en su transacción, las que falten. Una migración ya aplicada **no se edita**: se agrega otra. La `0001_initial` contiene el modelo completo (`docs/adr/0001-data-model.md`).
+
+- **Base nueva:** `npm run dev` la crea, migra y siembra.
+- **Base creada con el esquema anterior (antes de `products-api`):** no es compatible. Haz un backup de `data/store.db` si te interesa y ejecuta `npm run db:reset` con el servidor detenido.
+- **Probar sin tocar tu base:** `DB_PATH=/ruta/temporal/store.db npm run dev`.
 
 ## Estructura
 
@@ -99,7 +116,7 @@ src/
 ├── app.ts            createApp({ db }): construye la app (inyectable en tests)
 ├── server.ts         arranque: abre la base, carga datos de demo y escucha
 ├── config.ts         variables de entorno validadas con Zod
-├── db/               esquema, conexión, transacciones, seed y reset
+├── db/               conexión, migraciones versionadas, transacciones, seed y reset
 ├── errors/           AppError y manejador centralizado de errores
 ├── middleware/       validación (withValidation) y usuario actual (X-User-Id)
 └── modules/          un módulo por recurso: repository + routes
@@ -111,4 +128,5 @@ tests/                tests de integración con base en memoria
 - **`Error: listen EADDRINUSE :::3000`** — el puerto está ocupado. Define otro en `.env` (`PORT=3001`) o detén el proceso que lo usa.
 - **`Cannot find module 'node:sqlite'`** — la versión de Node es anterior a 22.13. Actualiza Node.
 - **Datos inconsistentes tras probar** — ejecuta `npm run db:reset` (con el servidor detenido).
+- **`no such column: category_id` o `La base tiene user_version=…`** — la base de archivo es de una versión anterior del esquema: recréala con `npm run db:reset`.
 - **Imágenes de productos no cargan** — se sirven desde `picsum.photos`; requieren conexión a internet.
