@@ -75,6 +75,31 @@
   letter-spacing: var(--tracking-h4);
 }
 
+.checkout {
+  min-height: 48px;
+  padding-inline: var(--space-6);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+  font: var(--text-body-m);
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--accent-hover);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  @include bp.up(md) {
+    align-self: flex-end;
+  }
+}
+
 .empty {
   display: flex;
   flex-direction: column;

@@ -11,6 +11,15 @@
     }
   </div>
 
+  <div class="notice" data-testid="checkout-notice" aria-live="polite">
+    @if (orders.notice(); as message) {
+      <p class="notice__text">
+        {{ message }}
+        <button type="button" class="notice__close" (click)="orders.dismissNotice()">Cerrar</button>
+      </p>
+    }
+  </div>
+
   @let current = store.state();
   @if (current.status === 'success') {
     <ul class="lines">
@@ -32,6 +41,15 @@
         {{ current.data.total | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
       </dd>
     </dl>
+    <button
+      type="button"
+      class="checkout"
+      data-testid="checkout"
+      [disabled]="checkoutDisabled()"
+      (click)="orders.checkout()"
+    >
+      {{ checkoutLabel() }}
+    </button>
   } @else if (current.status === 'empty') {
     <div class="empty">
       <p class="empty__text">Tu carrito está vacío</p>

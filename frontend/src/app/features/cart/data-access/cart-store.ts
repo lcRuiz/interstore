@@ -160,6 +160,19 @@ export class CartStore {
     );
   }
 
+  /** `true` si hay alguna operación del carrito en curso o en cola. */
+  readonly hasPending = computed(() => this.pendingIds().size > 0);
+
+  /**
+   * Deja el carrito local vacío sin llamar a la API.
+   *
+   * Lo usa el checkout: al confirmar el pedido el servidor ya vació el carrito.
+   */
+  clear(): void {
+    this.cartState.set(EMPTY_CART);
+    this.status.set('ready');
+  }
+
   /** Descarta el aviso actual. */
   dismissNotice(): void {
     this.noticeState.set(null);
