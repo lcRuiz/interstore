@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: crud-with-migration
+expected_outcome: |
+  El agente detecta el entorno (Express 5, node:sqlite, Vitest, formato de error del repo), introduce la tabla reviews mediante una migración versionada (decisión documentada, porque el esquema actual es idempotente), escribe primero specs de repositorio contra SQLite :memory: y specs HTTP con supertest que fallan por aserción (rutas en 501), implementa por capas hasta verde, documenta (feature y OpenAPI), audita OWASP 2025 solo el diff y se detiene en la puerta humana antes del push/PR, con la migración en su propio commit.

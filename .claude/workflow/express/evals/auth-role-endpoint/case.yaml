@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: auth-role-endpoint
+expected_outcome: |
+  Specs de autorización primero (401 sin usuario, 403 para customer, 200 para admin, 404 producto inexistente, 400 stock inválido, rol nunca tomado del body), migración para la columna role con default, middleware requireRole, y una auditoría que señala que la identidad depende de X-User-Id simulado para una función de administración (alto) y exige aceptación explícita del riesgo o un mecanismo real antes de avanzar.

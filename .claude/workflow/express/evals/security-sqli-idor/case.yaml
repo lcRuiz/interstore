@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: security-sqli-idor
+expected_outcome: |
+  express-sec detecta la inyección SQL (q y sort interpolados, A05:2025, alta o crítica) y el IDOR en el detalle de pedidos (A01:2025, alta), emite BLOQUEADO, se escriben tests de regresión en rojo (payload de inyección y acceso de un usuario al pedido de otro), se corrige con placeholders, LIKE escapado, sort en lista blanca y filtro por user_id, la suite pasa, se re-audita solo el delta y se refinan las reglas SRB-001/002/003 sin duplicarlas.
+context:
+  scaffold_script: place-files.sh

@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: pr-review-migration-adjustments
+expected_outcome: |
+  Para B1 se escribe primero un test de migración que aplica 0003 sobre una base con pedidos sintéticos de la versión anterior y falla; se corrige con una migración NUEVA (o con aprobación explícita si 0003 nunca se aplicó en un entorno compartido) que agrega DEFAULT o backfill, y se documenta el plan de rollback en el PR. S1 se resuelve con una migración de índice y evidencia de EXPLAIN QUERY PLAN. Commits nuevos sin force push, re-auditoría del delta, ronda 2 en docs/reviews y puerta humana antes del push.
+context:
+  scaffold_script: place-files.sh

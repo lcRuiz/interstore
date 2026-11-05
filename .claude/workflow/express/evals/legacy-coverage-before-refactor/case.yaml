@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: legacy-coverage-before-refactor
+expected_outcome: |
+  Primero tests de caracterización del comportamiento actual (pasan en verde; documentados como excepción a RED) usando una base :memory: (lo que exige extraer la conexión como dependencia sin cambiar el comportamiento); la inyección SQL se trata como hallazgo de seguridad con test de regresión; el refactor a routes/service/repository con createApp(deps), el formato de error del repo y la migración versionada va en commits refactor separados; después tests en rojo de la regla de vencimiento y su implementación (410 COUPON_EXPIRED con un reloj inyectado). Los cambios de comportamiento (404 en texto plano → formato JSON del repo) se declaran como cambio de requerimiento.
+context:
+  scaffold_script: place-files.sh

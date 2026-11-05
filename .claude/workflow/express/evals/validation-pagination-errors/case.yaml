@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: validation-pagination-errors
+expected_outcome: |
+  Specs que cubren defaults, máximo de pageSize, página fuera de rango, orden estable, sort solo desde una lista blanca, búsqueda con comodines escapados y errores uniformes sin fugas; implementación con SQL parametrizado, ORDER BY desde un mapa en lista blanca, LIKE con ESCAPE, total con el mismo WHERE e índice justificado para el filtro por categoría.
