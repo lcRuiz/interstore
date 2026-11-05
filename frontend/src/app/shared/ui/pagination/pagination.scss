@@ -1,0 +1,54 @@
+:host {
+  display: block;
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 0;
+  list-style: none;
+}
+
+// Objetivo táctil mínimo de 44px (diseño y WCAG 2.5.5): excepción de px suelto.
+.control {
+  min-width: 44px;
+  min-height: 44px;
+  padding-inline: var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font: var(--text-body-s);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+
+  &:hover:not(:disabled) {
+    background: var(--surface-subtle);
+  }
+
+  &:disabled {
+    color: var(--text-subtle);
+    border-color: var(--border);
+    cursor: not-allowed;
+  }
+}
+
+.control--current {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+
+  &:hover:not(:disabled) {
+    background: var(--accent-hover);
+  }
+}
+
+.gap {
+  display: inline-grid;
+  min-width: 44px;
+  min-height: 44px;
+  place-items: center;
+  color: var(--text-muted);
+}

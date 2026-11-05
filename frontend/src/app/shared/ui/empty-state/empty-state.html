@@ -1,0 +1,6 @@
+<div class="box">
+  <p class="message">{{ message() }}</p>
+  @if (actionLabel(); as label) {
+    <button type="button" class="action" (click)="action.emit()">{{ label }}</button>
+  }
+</div>
