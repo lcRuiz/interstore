@@ -19,8 +19,9 @@
     @let current = state();
     @if (current.status === 'success') {
       <ul class="grid">
-        @for (product of products(); track product.id) {
-          <li><app-product-card [product]="product" /></li>
+        @for (product of products(); track product.id; let i = $index) {
+          <!-- La primera fila puede contener el LCP: se prioriza; el resto se carga en diferido. -->
+          <li><app-product-card [product]="product" [priority]="i < priorityImages" /></li>
         }
       </ul>
     } @else if (current.status === 'empty') {

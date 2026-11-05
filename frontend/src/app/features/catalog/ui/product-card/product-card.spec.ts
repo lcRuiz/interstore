@@ -37,9 +37,10 @@ const q = (f: ComponentFixture<unknown>, sel: string) =>
   (f.nativeElement as HTMLElement).querySelector<HTMLElement>(sel);
 const text = (f: ComponentFixture<unknown>, sel: string) => q(f, sel)?.textContent.trim() ?? '';
 
-async function render(over: Partial<Product> = {}) {
+async function render(over: Partial<Product> = {}, priority?: boolean) {
   const fixture = TestBed.createComponent(ProductCard);
   fixture.componentRef.setInput('product', { ...base, ...over });
+  if (priority !== undefined) fixture.componentRef.setInput('priority', priority);
   await fixture.whenStable();
   return fixture;
 }
@@ -68,14 +69,34 @@ describe('ProductCard', () => {
     expect(text(fixture, '[data-testid="price"]').replace(/\s/g, ' ')).toBe('$ 2.490.000');
   });
 
-  it('debe renderizar la imagen con alt, width y height para evitar saltos de layout', async () => {
+  // La caja de la imagen es 4:5 (diseño) y las fotos son cuadradas: con width/height 480x480
+  // NgOptimizedImage avisa de distorsión (NG02952). El modo `fill` llena el contenedor, que ya
+  // reserva el espacio con aspect-ratio (sin saltos de layout).
+  it('debe renderizar la imagen en modo fill, con alt y sin dimensiones cuadradas fijas', async () => {
     const fixture = await render();
 
     const img = q(fixture, 'img') as HTMLImageElement;
     expect(img.getAttribute('src')).toBe(base.imageUrl);
     expect(img.getAttribute('alt')).toBe(base.name);
-    expect(img.getAttribute('width')).toBe('480');
-    expect(img.getAttribute('height')).toBe('480');
+    expect(img.hasAttribute('width')).toBe(false);
+    expect(img.hasAttribute('height')).toBe(false);
+    expect(img.style.position).toBe('absolute');
+  });
+
+  it('debe cargar la imagen en diferido y sin prioridad cuando priority no está activo', async () => {
+    const fixture = await render();
+
+    const img = q(fixture, 'img') as HTMLImageElement;
+    expect(img.getAttribute('loading')).toBe('lazy');
+    expect(img.getAttribute('fetchpriority')).not.toBe('high');
+  });
+
+  it('debe priorizar la imagen cuando priority está activo (candidata a LCP)', async () => {
+    const fixture = await render({}, true);
+
+    const img = q(fixture, 'img') as HTMLImageElement;
+    expect(img.getAttribute('fetchpriority')).toBe('high');
+    expect(img.getAttribute('loading')).not.toBe('lazy');
   });
 
   it('debe omitir la imagen cuando la URL no es https', async () => {

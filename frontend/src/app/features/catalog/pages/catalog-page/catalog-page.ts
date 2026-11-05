@@ -47,6 +47,12 @@ export class CatalogPage {
   /** Query param `page` (entero ≥ 1); otro valor equivale a 1. */
   readonly page = input<string | undefined>(undefined);
 
+  /**
+   * Imágenes con carga prioritaria: la primera fila de escritorio (4 columnas; en móvil, dos
+   * filas). En una grilla de imágenes iguales el candidato a LCP depende del orden de pintado.
+   */
+  protected readonly priorityImages = 4;
+
   protected readonly state = this.store.state;
   protected readonly meta = this.store.meta;
   protected readonly categories = this.store.categories;

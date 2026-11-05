@@ -1,12 +1,13 @@
 <article class="card" [class.card--sold-out]="soldOut()">
   <div class="media">
     @if (imageSrc(); as src) {
+      <!-- Modo fill: la caja .media reserva el espacio con aspect-ratio 4/5 y la foto (cuadrada) se recorta con object-fit. -->
       <img
         class="image"
         [ngSrc]="src"
         [alt]="product().name"
-        [width]="imageSize"
-        [height]="imageSize"
+        fill
+        [priority]="priority()"
         referrerpolicy="no-referrer"
       />
     }

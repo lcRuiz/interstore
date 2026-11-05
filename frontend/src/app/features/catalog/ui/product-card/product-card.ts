@@ -2,9 +2,6 @@ import { CurrencyPipe, NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import type { Product } from '../../data-access/catalog.types';
 
-/** Dimensiones intrínsecas de las imágenes del seed (480x480); evitan saltos de layout. */
-const IMAGE_SIZE = 480;
-
 /**
  * Tarjeta presentacional de producto: imagen, nombre, categoría, precio e insignias.
  *
@@ -26,8 +23,12 @@ const IMAGE_SIZE = 480;
 export class ProductCard {
   /** Producto a mostrar; el precio llega en COP enteros y se muestra tal cual. */
   readonly product = input.required<Product>();
+  /**
+   * Prioriza la carga de la imagen (`fetchpriority="high"`, sin carga diferida). Actívalo solo
+   * en la tarjeta candidata a LCP (la primera visible); por defecto la imagen se carga en diferido.
+   */
+  readonly priority = input(false);
 
-  protected readonly imageSize = IMAGE_SIZE;
   protected readonly soldOut = computed(() => this.product().stock === 0);
   /** URL de la imagen solo si es `https:`; cualquier otro esquema se descarta (SR-002). */
   protected readonly imageSrc = computed(() => httpsUrlOrNull(this.product().imageUrl));

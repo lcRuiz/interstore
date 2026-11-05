@@ -155,6 +155,20 @@ describe('CatalogPage', () => {
       expect(root().textContent).toContain('Producto 1');
     });
 
+    // En una grilla de imágenes iguales el candidato a LCP depende del orden de pintado: se
+    // prioriza la primera fila de escritorio (4 columnas; en móvil, las dos primeras filas).
+    it('debe priorizar solo las imágenes de las primeras 4 tarjetas cuando hay resultados', async () => {
+      await open('/');
+      const six = [1, 2, 3, 4, 5, 6].map((id) => product(id));
+      productsReq().flush({ data: six, meta: meta(6) });
+      await settle();
+
+      const priorities = qa('app-product-card img').map((img) => img.getAttribute('fetchpriority'));
+      expect(priorities).toHaveLength(6);
+      expect(priorities.slice(0, 4)).toEqual(['high', 'high', 'high', 'high']);
+      expect(priorities.slice(4)).not.toContain('high');
+    });
+
     it('debe mostrar «Mostrando X de Y productos» en una región aria-live polite', async () => {
       await openWithData('/', 30);
 

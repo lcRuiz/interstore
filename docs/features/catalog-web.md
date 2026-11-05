@@ -14,7 +14,8 @@ Página de catálogo que consume la paginación, el filtro, la búsqueda y el or
 | Debounce de 300 ms en `CatalogFilters`; solo emite si el texto recortado difiere del vigente en la URL | `distinctUntilChanged()` clásico | `distinctUntilChanged` solo compara con la emisión anterior y bloquearía escribir `a`, ir Atrás y volver a escribir `a`; comparar contra la URL equivale en el caso normal y es correcto con Atrás/Adelante |
 | El campo de búsqueda sigue a `q` salvo que `q` sea el eco de lo emitido | Enlazar `[value]="q()"` directamente | Sin esa guarda, el eco de la URL pisa lo que el usuario sigue escribiendo |
 | `pageSize` fijo en 12 | Selector de tamaño | Default del servidor y divisible entre 2, 3 y 4 columnas; acota el alcance |
-| `NgOptimizedImage` (`ngSrc` + `width`/`height` 480) sin loader | `<img src>` simple; configurar un loader para picsum | El loader por defecto deja la URL intacta y `width`/`height` evita saltos de layout. `picsum.photos` no tiene loader de Angular; añadir uno (y `preconnect`) sería configuración sin beneficio con 12 imágenes perezosas |
+| `NgOptimizedImage` en modo `fill` sin loader | `ngSrc` + `width`/`height` 480; `<img src>` simple; un loader para picsum | La caja es 4:5 (diseño) y las fotos son cuadradas: con `width`/`height` 480 Angular avisaba de distorsión (NG02952). En `fill` la imagen llena la caja `.media`, que ya reserva el espacio con `aspect-ratio` (sin saltos de layout), y `object-fit: cover` la recorta. `picsum.photos` no tiene loader de Angular y el loader por defecto deja la URL intacta |
+| `priority` en las 4 primeras tarjetas + `preconnect` a `picsum.photos` | Solo la primera; ninguna | En una grilla de imágenes iguales el candidato a LCP depende del orden de pintado (con solo la primera, NG02955 señaló la 5.ª). 4 = la primera fila en escritorio y las dos primeras en móvil; el resto se carga en diferido. `priority` exige `preconnect` al origen (NG02956) |
 | Imagen solo si `imageUrl` es `https:`; `referrerpolicy="no-referrer"` | Confiar en la API | La URL viene de la API: se descarta cualquier otro esquema (SR-002) |
 | `ErrorState` no muestra el `message` del servidor | Mostrar `ApiError.message` | Puede filtrar detalles internos; la UI decide por tipo de error (CLAUDE.md §6) |
 | `pagination`, `empty-state` y `error-state` en `shared/ui` | Dentro de `features/catalog/ui` | No conocen el dominio y los reutilizarán carrito y recompensas |
@@ -80,7 +81,7 @@ Ver `docs/security/catalog-web-audit.md`.
 - SUPUESTO: `pageSize` fijo en 12.
 - SUPUESTO: si fallan las categorías, el catálogo sigue funcionando.
 - SUPUESTO: una página fuera de rango se muestra como vacío con «Limpiar filtros» (el servidor responde 200 con `data: []`).
-- RECORTE: sin `priority`/`preconnect` para las imágenes de la primera fila (LCP).
+- NOTA: en ventanas muy bajas, una imagen de la 2.ª fila (no prioritaria) puede ser el primer candidato a LCP; es un aviso de desarrollo, no un error funcional.
 - RECORTE: los números de página son botones (no enlaces), así que no se abren en otra pestaña.
 - RECORTE: sin pruebas visuales automatizadas; la verificación contra la API real es manual.
 
