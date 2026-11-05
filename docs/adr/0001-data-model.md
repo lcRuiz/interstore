@@ -22,7 +22,7 @@ users ────────────────────────�
 ```sql
 CREATE TABLE categories (
   id   INTEGER PRIMARY KEY,
-  slug TEXT NOT NULL UNIQUE CHECK (slug GLOB '[a-z0-9-]*'),
+  slug TEXT NOT NULL UNIQUE CHECK (length(slug) BETWEEN 1 AND 50 AND slug NOT GLOB '*[^a-z0-9-]*'),
   name TEXT NOT NULL UNIQUE
 ) STRICT;
 

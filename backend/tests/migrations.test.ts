@@ -197,10 +197,28 @@ describe('restricciones del modelo (ADR 0001)', () => {
       expect(() => insertProduct({ price: 'abc' })).toThrow(/cannot store TEXT/);
     });
 
-    it('debe rechazar la categoría con CHECK cuando el slug no empieza por [a-z0-9-]', () => {
-      expect(() => db.prepare('INSERT INTO categories (slug, name) VALUES (?, ?)').run('Ropa2', 'Otra')).toThrow(
+    // SEC/B1 (revisión PR #1): GLOB '[a-z0-9-]*' solo validaba el primer carácter. El slug es
+    // el contrato del filtro (`^[a-z0-9-]{1,50}$` en la API y en OpenAPI): la base debe exigirlo entero.
+    it.each([
+      ['espacio en medio', 'ropa x'],
+      ['punto y coma', 'a;DROP'],
+      ['barra y query', 'a/b?c=1'],
+      ['mayúscula', 'Ropa2'],
+      ['vacío', ''],
+      ['letra con tilde', 'ñandu'],
+      ['51 caracteres', 'x'.repeat(51)],
+    ])('debe rechazar la categoría con CHECK cuando el slug tiene %s', (_caso, slug) => {
+      expect(() => db.prepare('INSERT INTO categories (slug, name) VALUES (?, ?)').run(slug, 'Otra')).toThrow(
         /CHECK constraint failed/,
       );
+    });
+
+    it.each([
+      ['minúsculas y guion', 'calzado-trail'],
+      ['solo dígitos', '2026'],
+      ['50 caracteres', 'x'.repeat(50)],
+    ])('debe aceptar la categoría cuando el slug es válido (%s)', (_caso, slug) => {
+      expect(() => db.prepare('INSERT INTO categories (slug, name) VALUES (?, ?)').run(slug, `Nombre ${slug}`)).not.toThrow();
     });
 
     it('debe rechazar la categoría con UNIQUE cuando el slug o el nombre se repiten', () => {
