@@ -25,6 +25,8 @@ export function openDatabase(path: string): Db {
   const inMemory = path === IN_MEMORY;
   if (!inMemory) mkdirSync(dirname(path), { recursive: true });
 
+  // `enableForeignKeyConstraints` y `PRAGMA foreign_keys = ON` son redundantes a propósito: el
+  // PRAGMA deja explícito el requisito sin depender del valor por defecto del driver.
   const db = new DatabaseSync(path, {
     enableForeignKeyConstraints: true,
     ...(inMemory ? {} : { timeout: BUSY_TIMEOUT_MS }),

@@ -88,6 +88,7 @@ Ver `docs/security/products-api-audit.md`. Resumen: SQL parametrizado, `ORDER BY
 ## Limitaciones
 - Concurrencia de SQLite: un único escritor. Esta feature solo lee; las lecturas concurrentes funcionan con WAL. Multi-proceso o escalado horizontal exigirían otro motor.
 - `LIKE '%q%'` recorre la tabla (sin índice). Con ~40 filas es irrelevante; para un catálogo grande, FTS5 (mejora anotada en el ADR).
+- El orden (`price`, `newest`, `name`) no tiene índice propio. `EXPLAIN QUERY PLAN` sobre el seed (2026-11-05) muestra `SEARCH p USING INDEX idx_products_category` para el filtro por categoría y `USE TEMP B-TREE FOR ORDER BY` en las tres variantes (sin filtro: `SCAN p USING INDEX idx_products_category`): ordena en memoria. Con ~40 filas es irrelevante. Señal para indexar: un catálogo de decenas de miles de filas o `sort` lento; el candidato es un índice compuesto por el orden más usado (p. ej. `(category_id, price, id)`), en una migración nueva.
 - `total` y la página son dos lecturas consecutivas sin transacción; en una escritura concurrente (no existe en esta feature) podrían diferir en una fila.
 - Las imágenes son URLs de `picsum.photos` (requieren internet).
 - El empate por `id` es contractual; SQLite ya recorre por `rowid`, por lo que un test no distingue su ausencia.

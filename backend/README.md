@@ -126,7 +126,7 @@ tests/                tests de integración con base en memoria
 ## Problemas comunes
 
 - **`Error: listen EADDRINUSE :::3000`** — el puerto está ocupado. Define otro en `.env` (`PORT=3001`) o detén el proceso que lo usa.
-- **`Cannot find module 'node:sqlite'`** — la versión de Node es anterior a 22.13. Actualiza Node.
+- **`Cannot find module 'node:sqlite'`** — la versión de Node es anterior a 22.16. Actualiza Node.
 - **Datos inconsistentes tras probar** — ejecuta `npm run db:reset` (con el servidor detenido).
 - **`no such column: category_id` o `La base tiene user_version=…`** — la base de archivo es de una versión anterior del esquema: recréala con `npm run db:reset`.
 - **Imágenes de productos no cargan** — se sirven desde `picsum.photos`; requieren conexión a internet.
