@@ -6,6 +6,9 @@ import { currentUser } from './middleware/current-user.js';
 import { createCartRepository } from './modules/cart/cart.repository.js';
 import { createCartRouter } from './modules/cart/cart.routes.js';
 import { createCartService } from './modules/cart/cart.service.js';
+import { createOrdersRepository } from './modules/orders/orders.repository.js';
+import { createOrdersRouter } from './modules/orders/orders.routes.js';
+import { createOrdersService } from './modules/orders/orders.service.js';
 import { createCategoriesRouter } from './modules/products/categories.routes.js';
 import { createProductsRepository } from './modules/products/products.repository.js';
 import { createProductsRouter } from './modules/products/products.routes.js';
@@ -32,7 +35,9 @@ export function createApp({ db, corsOrigin }: AppDeps): Express {
   const requireUser = currentUser(users);
   const productsService = createProductsService(createProductsRepository(db));
 
-  const cartService = createCartService(db, createCartRepository(db));
+  const cartRepository = createCartRepository(db);
+  const cartService = createCartService(db, cartRepository);
+  const ordersService = createOrdersService(db, createOrdersRepository(db), cartRepository);
 
   app.get('/api/health', (_req, res) => {
     res.json({ data: { status: 'ok' } });
@@ -40,6 +45,7 @@ export function createApp({ db, corsOrigin }: AppDeps): Express {
   app.use('/api/me', requireUser, createMeRouter());
   app.use('/api/products', requireUser, createProductsRouter(productsService));
   app.use('/api/cart', requireUser, createCartRouter(cartService));
+  app.use('/api/orders', requireUser, createOrdersRouter(ordersService));
   app.use('/api/categories', requireUser, createCategoriesRouter(productsService));
 
   app.use(notFoundHandler);
