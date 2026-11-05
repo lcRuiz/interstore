@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: security-xss-bypass
+expected_outcome: |
+  angular-sec detecta bypassSecurityTrustHtml sobre datos de la API como A05:2025 Injection de severidad alta o crítica con archivo y línea, emite BLOQUEADO hasta corregir, se crea un test de regresión con un payload XSS que falla con el código original, el fix elimina el bypass (deja que Angular sanitice o renderiza texto), la suite pasa, se re-audita solo el delta y se refina la regla SR-001 de security-rules.md en lugar de duplicarla.
+context:
+  scaffold_script: place-files.sh

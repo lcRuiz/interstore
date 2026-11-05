@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: signals-component-states
+expected_outcome: |
+  Store con estado LoadState<T> en signals y página OnPush con @switch sobre los cuatro estados; un test por estado más el reintento, escritos antes de implementar, usando await fixture.whenStable() y sin fakeAsync.

@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: http-service-error-handling
+expected_outcome: |
+  Primero specs con HttpTestingController (petición, params omitidos cuando están vacíos, mapeo de respuesta, 400 con cuerpo estándar, status 0 y 5xx) que fallan por aserción; después la implementación mínima que pasa todo, reutiliza ApiError/apiErrorInterceptor existentes y documenta con TSDoc los endpoints y los códigos de error.

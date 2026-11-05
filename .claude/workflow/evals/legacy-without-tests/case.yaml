@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: legacy-without-tests
+expected_outcome: |
+  Primero tests de caracterización del comportamiento actual (deben pasar en verde y se documentan como excepción a RED), luego la migración a Angular 21 (signals, inject, control flow, OnPush) en commits refactor separados con los tests en verde, después tests en rojo del filtro por categoría y su implementación; la migración y el cambio de comportamiento no se mezclan en el mismo commit.
+context:
+  scaffold_script: place-files.sh

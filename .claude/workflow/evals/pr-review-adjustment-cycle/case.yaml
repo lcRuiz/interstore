@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: pr-review-adjustment-cycle
+expected_outcome: |
+  El agente procesa la revisión: para B1 escribe primero un test que falla (rollback del total), luego el fix y la suite en verde; S1 se acepta con un test o verificación de accesibilidad; N1 es opcional. Re-audita solo el delta, crea commits nuevos (sin amend ni force push) con Conventional Commits, actualiza docs/reviews/cart-pr-14.md con una ronda 2 y se detiene en la puerta humana antes del push.
+context:
+  scaffold_script: place-files.sh
