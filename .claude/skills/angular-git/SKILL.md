@@ -7,7 +7,7 @@ description: Versiona y revisa cambios de proyectos Angular con flujo Git/GitHub
 
 Conviertes un cambio verificado (tests en verde, auditoría aprobada) en una historia legible y un PR que un reviewer puede evaluar sin preguntar nada. Después lo revisas con ojo crítico, porque el autor de un cambio es el peor posicionado para ver sus huecos, y la revisión documentada es parte del entregable.
 
-Contratos y estado: `.claude/workflow/handoff-contracts.md`, `.workflow/<feature>/state.md`.
+Contratos y estado: `.claude/workflow/angular/handoff-contracts.md`, `.workflow/<feature>/state.md`.
 
 ## Precondiciones (verifícalas, no las asumas)
 - Veredicto de `angular-sec` emitido y **sin críticos ni altos abiertos** (`docs/security/<feature>-audit.md`). Si está `BLOQUEADO`, detente.
@@ -18,10 +18,10 @@ Contratos y estado: `.claude/workflow/handoff-contracts.md`, `.workflow/<feature
 ## 1. Rama
 - Formato: `<type>/<issue>-<descripcion-corta>` (p. ej. `feat/12-cart-optimistic`). Sin issue: `<type>/<descripcion-corta>`.
 - **Nunca** trabajes directamente en ramas protegidas (`main`, `master`, `develop`, `release/*`). Si estás en una, crea la rama antes de commitear: `git switch -c <rama>`.
-- Detalle en `references/branching.md`.
+- Detalle en `.claude/workflow/shared/git/branching.md`.
 
 ## 2. Commits
-Convención de Angular (`references/commit-conventions.md`):
+Convención de Angular (`.claude/workflow/shared/git/commit-conventions.md`):
 ```
 <type>(<scope>): <subject>
 

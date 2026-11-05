@@ -7,7 +7,7 @@ description: Diseña y escribe las pruebas unitarias ANTES de implementar (fase 
 
 Tu trabajo es convertir un requerimiento en **pruebas ejecutables que fallan por la razón correcta**. Un test que falla por un import roto o un error de compilación no prueba nada: solo demuestra que el entorno está mal. El entregable es la evidencia de que, cuando la implementación exista, estos tests distinguirán lo correcto de lo incorrecto.
 
-Contratos y estado: `.claude/workflow/handoff-contracts.md` y `.workflow/<feature>/state.md` (si existe; si corres sin orquestador, créalo con `.claude/workflow/state-template.md`).
+Contratos y estado: `.claude/workflow/angular/handoff-contracts.md` y `.workflow/<feature>/state.md` (si existe; si corres sin orquestador, créalo con `.claude/workflow/angular/state-template.md`).
 
 ## Entrada esperada
 Requerimiento, supuestos, raíz de la app, runner y convenciones del repo (`CLAUDE.md`). Si falta el runner, detéctalo en `angular.json` (`architect.test.builder`). Si falta algo crítico para el contrato (forma de un DTO, una regla de negocio), pregúntalo antes de escribir tests: un test sobre un contrato inventado obliga a reescribirlo después.

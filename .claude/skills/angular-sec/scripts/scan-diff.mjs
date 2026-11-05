@@ -2,37 +2,18 @@
 /**
  * Barrido de patrones de riesgo (OWASP Top 10:2025, frontend Angular) limitado
  * a las líneas AÑADIDAS del diff contra una base, más los archivos nuevos sin trackear.
+ * El motor (diff, alcance, salida) es compartido: .claude/workflow/shared/scripts/scan-diff-core.mjs.
  *
- * Es un punto de partida para la revisión manual de angular-sec, no un veredicto:
- * cada coincidencia se confirma o se descarta leyendo el código.
+ * Es un punto de partida para la revisión manual de angular-sec, no un veredicto.
  *
  * Uso:
  *   node .claude/skills/angular-sec/scripts/scan-diff.mjs [--base main] [--json]
  *
- * --base  Rama o commit base. Se compara el árbol de trabajo (incluye cambios sin
- *         commitear) contra merge-base(HEAD, base). Por defecto: main.
- * --json  Salida JSON en lugar de Markdown.
- *
- * Código de salida: 0 siempre que el análisis corra (las coincidencias no son errores);
- * 2 si git falla.
+ * Código de salida: 0 si el análisis corre (las coincidencias no son errores); 2 si git falla.
  */
-import { execFileSync } from 'node:child_process';
-import { readFileSync, existsSync } from 'node:fs';
+import { newDependencyCheck, runScan } from '../../../workflow/shared/scripts/scan-diff-core.mjs';
 
-const args = process.argv.slice(2);
-const argValue = (name, fallback) => {
-  const i = args.indexOf(name);
-  return i >= 0 && args[i + 1] ? args[i + 1] : fallback;
-};
-const base = argValue('--base', 'main');
-const asJson = args.includes('--json');
-
-const SCANNED = /\.(ts|html|json|scss|css|js|mjs|yml|yaml)$|(^|\/)\.npmrc$/;
-// Se excluyen artefactos y los propios fixtures de la skill y de los evals (contienen vulnerabilidades a propósito).
-const IGNORED =
-  /(^|\/)(node_modules|dist|\.angular|coverage)\/|package-lock\.json$|\.claude\/skills\/angular-sec\/|\.claude\/workflow\/evals\//;
-
-/** Reglas: id, categoría OWASP, severidad sugerida, regex sobre la línea, filtro de archivo. */
+/** Reglas: id, categoría OWASP, severidad sugerida, regex sobre la línea añadida. */
 const RULES = [
   { id: 'xss-bypass', owasp: 'A05:2025 Injection', sev: 'alta', re: /bypassSecurityTrust(Html|Script|Style|Url|ResourceUrl)/, hint: 'Desactiva el sanitizador. Revisión manual obligatoria (SR-001).' },
   { id: 'xss-innerhtml', owasp: 'A05:2025 Injection', sev: 'media', re: /\[(innerHTML|outerHTML)\]|\.(innerHTML|outerHTML)\s*=|insertAdjacentHTML|document\.write\(/, hint: 'Sink de HTML: rastrear el origen del valor (SR-001).' },
@@ -59,86 +40,14 @@ const RULES = [
   { id: 'empty-catch', owasp: 'A10:2025 Mishandling of Exceptional Conditions', sev: 'media', re: /catch\s*(\([^)]*\))?\s*\{\s*\}|error\s*:\s*\(\s*\)\s*=>\s*\{\s*\}|\.catch\(\s*\(\s*\)\s*=>\s*(undefined|null|\{\s*\})\s*\)/, hint: 'Error silenciado (SR-009).' },
 ];
 
-function git(argv) {
-  try {
-    return execFileSync('git', argv, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
-  } catch (error) {
-    console.error(`git ${argv.join(' ')} falló: ${error instanceof Error ? error.message : String(error)}`);
-    process.exit(2);
-  }
-}
-
-const mergeBase = git(['merge-base', 'HEAD', base]).trim();
-
-/** @type {{file: string, line: number, text: string}[]} */
-const added = [];
-
-// Líneas añadidas en archivos trackeados (árbol de trabajo vs merge-base).
-let currentFile = null;
-let lineNo = 0;
-for (const raw of git(['diff', '-U0', '--no-color', '--no-ext-diff', mergeBase]).split('\n')) {
-  if (raw.startsWith('+++ ')) {
-    currentFile = raw === '+++ /dev/null' ? null : raw.replace(/^\+\+\+ b\//, '');
-    continue;
-  }
-  const hunk = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(raw);
-  if (hunk) {
-    lineNo = Number(hunk[1]);
-    continue;
-  }
-  if (!currentFile) continue;
-  if (raw.startsWith('+')) {
-    added.push({ file: currentFile, line: lineNo, text: raw.slice(1) });
-    lineNo += 1;
-  }
-}
-
-// Archivos nuevos sin trackear: todas sus líneas cuentan como añadidas.
-const untracked = git(['ls-files', '--others', '--exclude-standard']).split('\n').filter(Boolean);
-for (const file of untracked) {
-  if (!existsSync(file)) continue;
-  readFileSync(file, 'utf8')
-    .split('\n')
-    .forEach((text, i) => added.push({ file, line: i + 1, text }));
-}
-
-const inScope = added.filter((l) => SCANNED.test(l.file) && !IGNORED.test(l.file));
-const files = [...new Set(inScope.map((l) => l.file))].sort();
-
-const findings = [];
-for (const l of inScope) {
-  for (const rule of RULES) {
-    if (rule.re.test(l.text)) {
-      findings.push({ rule: rule.id, owasp: rule.owasp, severity: rule.sev, file: l.file, line: l.line, code: l.text.trim().slice(0, 160), hint: rule.hint });
-    }
-  }
-}
-
-// package.json: dependencias añadidas (A03).
-for (const l of inScope.filter((x) => /(^|\/)package\.json$/.test(x.file))) {
-  if (/^\s*"(@?[\w./-]+)"\s*:\s*"[~^]?\d/.test(l.text)) {
-    findings.push({ rule: 'new-dependency', owasp: 'A03:2025 Software Supply Chain Failures', severity: 'informativa', file: l.file, line: l.line, code: l.text.trim(), hint: 'Dependencia nueva o actualizada: justificar y ejecutar npm audit --omit=dev (SR-008).' });
-  }
-}
-
-const result = { base, mergeBase, filesInScope: files, addedLines: inScope.length, findings };
-
-if (asJson) {
-  console.log(JSON.stringify(result, null, 2));
-} else {
-  console.log(`# scan-diff: base ${base} (merge-base ${mergeBase.slice(0, 7)})\n`);
-  console.log(`Archivos en alcance (${files.length}):`);
-  for (const f of files) console.log(`- ${f}`);
-  console.log(`\nLíneas añadidas analizadas: ${inScope.length}\n`);
-  if (findings.length === 0) {
-    console.log('Sin coincidencias de patrones. La revisión manual sigue siendo obligatoria.');
-  } else {
-    console.log(`Coincidencias (${findings.length}). Confirmar o descartar cada una manualmente:\n`);
-    console.log('| Severidad sugerida | OWASP | Regla | Ubicación | Código | Pista |');
-    console.log('|---|---|---|---|---|---|');
-    for (const f of findings) {
-      const code = f.code.replace(/\|/g, '\\|');
-      console.log(`| ${f.severity} | ${f.owasp} | ${f.rule} | \`${f.file}:${f.line}\` | \`${code}\` | ${f.hint} |`);
-    }
-  }
-}
+runScan({
+  title: 'scan-diff (angular)',
+  rules: RULES,
+  scanned: /\.(ts|html|json|scss|css|js|mjs|yml|yaml)$|(^|\/)\.npmrc$/,
+  // El frontend está en frontend/: no analiza backend ni las propias skills.
+  ignored: /^backend\//,
+  extraChecks: newDependencyCheck(
+    'A03:2025 Software Supply Chain Failures',
+    'Dependencia nueva o actualizada: justificar y ejecutar npm audit --omit=dev (SR-008).',
+  ),
+});

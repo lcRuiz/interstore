@@ -1,6 +1,10 @@
-# Convención de commits (Angular / Conventional Commits)
+# Convención de commits (Conventional Commits, convención de Angular)
 
-Fuente: guía de contribución de Angular (`https://github.com/angular/angular/blob/main/contributing-docs/commit-message-guidelines.md`). Si el repo tiene commitlint, sus reglas mandan.
+Compartida por `angular-git` y `express-git`. Fuente: guía de contribución de Angular (`https://github.com/angular/angular/blob/main/contributing-docs/commit-message-guidelines.md`), que se usa como convención general, sea cual sea el stack. Si el repo tiene commitlint, sus reglas mandan.
+
+Scopes: el módulo o feature afectado (`cart`, `catalog`, `users`, `auth`, `db`) o el paquete (`frontend`, `backend`). Reutiliza los que ya aparecen en `git log`.
+
+Ejemplos de backend: `feat(orders): add checkout endpoint`, `fix(auth): reject expired tokens`, `feat(db): add orders and order_items tables`, `test(products): add pagination and filter specs`.
 
 ## Formato
 ```
@@ -67,3 +71,14 @@ Closes #12
 4. `docs(<scope>): document <feature> and security audit`
 
 Si el repo no tolera commits en rojo en `main` (merge sin squash + CI por commit), combina 1 y 2 o acuerda *squash merge*; decláralo en el PR.
+
+## Cambios de esquema y de contrato
+- **Migraciones** de base de datos: en su propio commit (`feat(db): …` o `refactor(db): …`) o, si van con la feature, nombradas explícitamente en el body ("Adds migration 0003_orders"). Así se pueden revisar y revertir por separado.
+- **Contrato de API** (OpenAPI, forma de respuestas, códigos de error, rutas): un cambio incompatible lleva `BREAKING CHANGE:` en el footer con la migración para los clientes. Ejemplo:
+  ```
+  feat(products)!: return prices as integer cents
+
+  BREAKING CHANGE: `price` is now an integer in minor units. Clients must
+  divide by 100 to display it.
+  ```
+- **Contratos internos compartidos** (componentes de `shared/`, tipos de `core/api` en el frontend): misma regla que el contrato de API.

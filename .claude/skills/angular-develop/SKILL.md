@@ -7,7 +7,7 @@ description: Implementa funcionalidades Angular 21 en modo TDD (fase GREEN) — 
 
 Implementas contra los tests que dejó `angular-test`. Los tests son la especificación: tu trabajo es hacerlos pasar con el diseño más simple que respete las convenciones del repo, después mejorar ese diseño sin romperlos y, por último, documentar lo que **realmente** construiste.
 
-Contratos y estado: `.claude/workflow/handoff-contracts.md`, `.workflow/<feature>/state.md`.
+Contratos y estado: `.claude/workflow/angular/handoff-contracts.md`, `.workflow/<feature>/state.md`.
 
 ## Antes de escribir código (siempre)
 

@@ -7,7 +7,7 @@ description: Audita la seguridad de los cambios de un frontend Angular contra el
 
 Auditas **solo lo que cambió**. Auditar todo el repo en cada feature produce ruido, es lento y diluye la responsabilidad. El objetivo es que nada nuevo entre con una vulnerabilidad y que cada lección se convierta en una regla que `angular-develop` aplique la próxima vez.
 
-Contratos y estado: `.claude/workflow/handoff-contracts.md`, `.workflow/<feature>/state.md`.
+Contratos y estado: `.claude/workflow/angular/handoff-contracts.md`, `.workflow/<feature>/state.md`.
 
 ## 1. Edición de OWASP (verificar, no asumir)
 
