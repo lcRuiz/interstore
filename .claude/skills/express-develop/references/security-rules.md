@@ -18,6 +18,7 @@ Formato: ID · categoría OWASP (edición usada) · regla "haz X, evita Y porque
 | SRB-010 | A03:2025 Software Supply Chain Failures | Dependencias nuevas |
 | SRB-011 | A10:2025 Mishandling of Exceptional Conditions | Transacciones y fallos parciales |
 | SRB-012 | A07:2025 Authentication Failures | Identidad desde la sesión, no del cliente |
+| SRB-013 | A06:2025 Insecure Design | `CHECK` de formato que cubra el valor completo |
 
 ---
 
@@ -103,3 +104,14 @@ Migraciones: aplica cada una en su propia transacción **junto con** `PRAGMA use
 **Regla:** obtén la identidad solo del middleware de autenticación (sesión o token verificado) y nunca de campos del body; mantén mensajes y tiempos iguales para "usuario inexistente" y "credencial inválida".
 Nota del repo: `X-User-Id` es una **simulación sin seguridad** (supuesto de la prueba técnica): cualquier cliente puede suplantar a otro usuario. Es un riesgo aceptado y documentado; no lo presentes como autenticación ni lo uses como base para funciones sensibles sin sustituirlo.
 **Origen:** línea base, 2026-11-05 (`backend/src/middleware/current-user.ts`).
+
+### SRB-013 · A06:2025 Insecure Design · CHECK de formato
+**Regla:** cuando un `CHECK` de SQLite deba garantizar el formato de un valor, escríbelo como "no contiene ningún carácter fuera de la clase" (`NOT GLOB '*[^a-z0-9-]*'`) más un `length(...)` acotado, y pruébalo con casos de rechazo **y** de aceptación; evita `GLOB '[a-z0-9-]*'`, porque el `*` final acepta cualquier cosa tras el primer carácter y el `CHECK` parece proteger sin hacerlo.
+```sql
+-- Incorrecto: 'ropa x', 'a;DROP' y 'a/b?c=1' pasan
+CHECK (slug GLOB '[a-z0-9-]*')
+-- Correcto
+CHECK (length(slug) BETWEEN 1 AND 50 AND slug NOT GLOB '*[^a-z0-9-]*')
+```
+La validación del borde (Zod) sigue siendo la primera defensa; el `CHECK` es la última y debe decir lo mismo que el contrato. Una migración mergeada no se edita, así que este error se paga con una reconstrucción de tabla.
+**Origen:** products-api, 2026-11-05 (revisión del PR #1, B1).

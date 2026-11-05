@@ -115,3 +115,9 @@ Bajo. Superficie de solo lectura, con entradas validadas y consultas parametriza
 | SRB-002 | Refinada | `WHERE` dinámico con fragmentos constantes + parámetros, búsqueda normalizada (`search_name`), orden por columna normalizada con desempate por id |
 | SRB-007 | Refinada | Tope de `page` (OFFSET desbordado → 500, verificado) y validación de ids de ruta con regex decimal en lugar de `z.coerce.number()` |
 | SRB-011 | Refinada | Migraciones transaccionales con `user_version`, versiones consecutivas, rechazo de base más nueva, nunca editar una migración aplicada |
+
+## Re-auditoría del delta (revisión del PR #1, ronda 1)
+- Alcance: `f51c9e9..eaa4bef` (`0001_initial.ts`, `connection.ts`, `migrations.test.ts`, ADR y documentación).
+- Cambio relevante: el `CHECK` de `categories.slug` pasa de `GLOB '[a-z0-9-]*'` (solo validaba el primer carácter) a `length(slug) BETWEEN 1 AND 50 AND slug NOT GLOB '*[^a-z0-9-]*'`. Es integridad de datos / diseño (A06:2025), severidad baja: la API ya validaba el slug de la query, pero la base no garantizaba el formato que promete el contrato.
+- `scan-diff.mjs --base f51c9e9`: sin coincidencias. Revisión manual: el cambio endurece una restricción y no elimina ninguna protección.
+- Veredicto sin cambios: **APROBADO**.
