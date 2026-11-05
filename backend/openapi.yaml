@@ -68,6 +68,36 @@ components:
         pageSize: { type: integer, minimum: 1, maximum: 50 }
         total: { type: integer, minimum: 0, description: Filas que cumplen el filtro (sin paginar). }
         totalPages: { type: integer, minimum: 0, description: 0 cuando no hay resultados. }
+    CartItem:
+      type: object
+      required: [productId, quantity, product, lineTotal]
+      properties:
+        productId: { type: integer, minimum: 1 }
+        quantity: { type: integer, minimum: 1, maximum: 99 }
+        product: { $ref: '#/components/schemas/Product' }
+        lineTotal: { type: integer, description: 'price * quantity, calculado en el servidor.' }
+    Cart:
+      type: object
+      required: [items, totalItems, total]
+      properties:
+        items:
+          type: array
+          description: Ordenados por fecha de alta y luego por productId.
+          items: { $ref: '#/components/schemas/CartItem' }
+        totalItems: { type: integer, minimum: 0, description: Suma de cantidades. }
+        total: { type: integer, minimum: 0, description: Suma de lineTotal (COP). }
+    Rewards:
+      type: object
+      required: [awarded, balance]
+      properties:
+        awarded: { type: integer, enum: [0, 10], description: '10 solo la primera vez que el usuario agrega ese producto.' }
+        balance: { type: integer, minimum: 0, description: Saldo de puntos DESPUES de la operación. }
+    CartResult:
+      type: object
+      required: [data, rewards]
+      properties:
+        data: { $ref: '#/components/schemas/Cart' }
+        rewards: { $ref: '#/components/schemas/Rewards' }
   responses:
     ValidationError:
       description: Datos de entrada inválidos (VALIDATION_ERROR) o cabecera X-User-Id mal formada (INVALID_USER_ID).
@@ -177,5 +207,108 @@ paths:
                   data:
                     type: array
                     items: { $ref: '#/components/schemas/Category' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/cart:
+    get:
+      summary: Carrito del usuario de la sesión
+      operationId: getCart
+      security: [{ demoUser: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Cart' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/cart/items:
+    post:
+      summary: Agrega un producto (suma la cantidad); +10 puntos la primera vez por producto
+      operationId: addCartItem
+      security: [{ demoUser: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [productId]
+              properties:
+                productId: { type: integer, minimum: 1 }
+                quantity: { type: integer, minimum: 1, maximum: 99, default: 1 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CartResult' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: PRODUCT_NOT_FOUND
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '409':
+          description: OUT_OF_STOCK, o QUANTITY_EXCEEDS_STOCK con details.available.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /api/cart/items/{productId}:
+    patch:
+      summary: Establece la cantidad de una línea (nunca otorga puntos)
+      operationId: setCartItemQuantity
+      security: [{ demoUser: [] }]
+      parameters:
+        - { name: productId, in: path, required: true, schema: { type: integer, minimum: 1 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [quantity]
+              properties:
+                quantity: { type: integer, minimum: 1, maximum: 99 }
+      responses:
+        '200':
+          description: OK (rewards.awarded siempre 0)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CartResult' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: CART_ITEM_NOT_FOUND
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '409':
+          description: OUT_OF_STOCK o QUANTITY_EXCEEDS_STOCK (details.available).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '500': { $ref: '#/components/responses/InternalError' }
+    delete:
+      summary: Quita una línea (idempotente; no resta puntos)
+      operationId: removeCartItem
+      security: [{ demoUser: [] }]
+      parameters:
+        - { name: productId, in: path, required: true, schema: { type: integer, minimum: 1 } }
+      responses:
+        '200':
+          description: OK (rewards.awarded siempre 0)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CartResult' }
+        '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '500': { $ref: '#/components/responses/InternalError' }
